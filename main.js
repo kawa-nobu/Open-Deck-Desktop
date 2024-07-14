@@ -199,7 +199,7 @@ const createWindow = () => {
       break;
     }
     //is_first_running();
-    //opd_main_window.setMenuBarVisibility(false);
+    opd_main_window.setMenuBarVisibility(false);
     opd_main_window.loadURL(`file://${app.getAppPath()}/opd_resource/main.html`);
     //閉じるボタン最小化
     opd_main_window.on('close', (event) => {
