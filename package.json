@@ -1,0 +1,43 @@
+{
+  "name": "open_deck_desktop",
+  "productName": "Open-Deck-Prototype",
+  "version": "0.0.1",
+  "description": "The Open Source Deck",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "kawa-nobu",
+  "license": "MIT",
+  "repository": "github:kawa-nobu/Open-Deck-Desktop",
+  "devDependencies": {
+    "electron": "^29.1.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "work.kwdev.opdapp.prototype",
+    "files": [
+      "opd_resource/*",
+      "opd_resource/icon/*",
+      "package.json",
+      "main.js",
+      "about_opd_preload.js",
+      "preload.js",
+      "preload_session_manager.js",
+      "preload_system_settings.js",
+      "preload_webview.js"
+    ],
+    "mac": {
+      "target": "dmg",
+      "icon": "./OpenDeck_App_Logo.png"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "./OpenDeck_App_Logo.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "./OpenDeck_App_Logo.png"
+    }
+  }
+}

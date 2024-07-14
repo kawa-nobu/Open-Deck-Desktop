@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8" >
+    <title>Open-Deckアカウントセッションマネージャー</title>
+    <script src="session_manager.js" charset="UTF-8"></script>
+    <style>
+        html{
+            color-scheme: light dark;
+        }
+        .header{
+            display: flex;
+            justify-content: center;
+        }
+        table{
+            border-collapse: collapse;
+            border: 2px solid rgb(113, 113, 113);
+        }
+        th,td {
+            border: 1.5px solid rgb(135, 135, 135);
+            padding: 0px 10px;
+        }
+        .session_list_area{
+            display: flex;
+            justify-content: center;
+        }
+        .session_list{
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <section class="area1">
+            <h2>アカウントセッションマネージャー</h2>
+            <div>各カラムに適用するアカウントセッションを管理できます</div>
+            <div>※デフォルトセッションの操作は行えません
+                <br>
+                ※アカウントセッションについてはOpen-Deckヘルプをご確認ください
+            </div>
+        </section>
+    </div>
+    <div class="session_list_area">
+        <section class="area2 session_list">
+            <h3>Twitterカラム セッション</h3>
+            <table>
+                <thead>
+                  <tr>
+                    <th scope="col">セッション名</th>
+                    <th scope="col">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="twitter_session_list">
+                </tbody>
+              </table>
+              <div class="add_session_area">新規追加<br><input id="add_twitter_session_name" type="text" placeholder="任意のセッション名を入力"><input id="add_twitter_session_button" type="button" value="追加する"></div>
+        </section>
+        <section class="area3 session_list">
+            <h3>Misskeyカラム セッション</h3>
+            <table>
+                <thead>
+                  <tr>
+                    <th scope="col">セッション名</th>
+                    <th scope="col">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="misskey_session_list">
+                </tbody>
+              </table>
+              <div class="add_session_area">新規追加<br><input id="add_misskey_session_name" type="text" placeholder="任意のセッション名を入力"><input id="add_misskey_session_button" type="button" value="追加する"></div>
+        </section>
+        <section class="area3 session_list">
+            <h3>BlueSkyカラム セッション</h3>
+            <table>
+                <thead>
+                  <tr>
+                    <th scope="col">セッション名</th>
+                    <th scope="col">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="bluesky_session_list">
+                </tbody>
+              </table>
+              <div class="add_session_area">新規追加<br><input id="add_bluesky_session_name" type="text" placeholder="任意のセッション名を入力"><input id="add_bluesky_session_button" type="button" value="追加する"></div>
+        </section>
+    </div>
+</body>
+</html>

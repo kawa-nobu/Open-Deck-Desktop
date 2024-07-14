@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8" >
+    <title>Open-Deckシステム設定</title>
+    <script src="system_settings.js" charset="UTF-8"></script>
+    <style>
+        html{
+            color-scheme: light dark;
+        }
+        .header{
+            display: flex;
+            justify-content: center;
+        }
+        table{
+            border-collapse: collapse;
+            border: 2px solid rgb(113, 113, 113);
+        }
+        th,td {
+            border: 1.5px solid rgb(135, 135, 135);
+            padding: 0px 10px;
+        }
+        .settings_area{
+            justify-content: center;
+            flex-direction: column;
+        }
+        .setting_list{
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <section class="area1">
+            <h2>Open-Deckシステム設定</h2>
+        </section>
+    </div>
+    <div class="settings_area">
+        <section class="setting_list">
+            <h3>外観</h3>
+            <div><label for="opd_color_mode">カラーモード</label><select id="opd_color_mode"><option value="0">システム</option><option value="1">ライト</option><option value="2">ダーク</option></select></div>
+        </section>
+        <section class="setting_list">
+            <h3>ウィンドウ設定</h3>
+            <div><label for="opd_close_btn_mini">閉じるボタンを最小化にする</label><input id="opd_close_btn_mini" type="checkbox"></div>
+        </section>
+        <section class="setting_list">
+            <h3>システム操作</h3>
+            <div><input id="opd_app_exit" type="button" value="Open-Deckを終了"></div>
+        </section>
+    </div>
+</body>
+</html>
