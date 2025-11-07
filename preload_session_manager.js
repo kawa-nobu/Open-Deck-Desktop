@@ -2,7 +2,7 @@ const {contextBridge, ipcRenderer} = require('electron');
 //const path = require('path')
 //const fs = require('fs');
 contextBridge.exposeInMainWorld("opd_system",{
-    opd_session_store_operation(mode, data){
+    async opd_session_store_operation(mode, data){
         switch(mode){
             case 'get_store':
                 const get_session_data = ipcRenderer.invoke('OPD_SessionManager_GetStore', {message:"get_session_store"}).then((res)=>{
@@ -15,12 +15,14 @@ contextBridge.exposeInMainWorld("opd_system",{
                 })
                 return add_session_data;
             case 'delete_store':
-                const delete_session_data = ipcRenderer.invoke('OPD_SessionManager_DeleteStore', {add_data:data}).then((res)=>{
-                    return res;
-                })
+                const delete_session_data = await ipcRenderer.invoke('OPD_SessionManager_DeleteStore', {add_data:data})
                 return delete_session_data;
             default:
                 return null;
         }
+    },
+    async opd_custom_dialog(title, detail){
+        const res = await ipcRenderer.invoke('open_custom_dialog', {title:title, detail:detail});
+        return res;
     }
 });

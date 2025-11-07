@@ -36,6 +36,11 @@ contextBridge.exposeInMainWorld("opd_system",{
     },
     opd_get_data_store(store_name){
         switch(store_name){
+            case 'opd_system_settings':
+                const get_system_settings_data = ipcRenderer.invoke('OPD_GetStoreItem', {message:'opd_system_settings'}).then((res)=>{
+                    return res;
+                })
+                return get_system_settings_data;
             case 'opd_settings':
                 const get_settings_data = ipcRenderer.invoke('OPD_GetStoreItem', {message:'opd_settings'}).then((res)=>{
                     return res;
@@ -74,8 +79,18 @@ contextBridge.exposeInMainWorld("opd_system",{
         /*ipcRenderer.on('opd_update_access_limit', (e, data)=>{
             //func(data)
         })*/
-       ipcRenderer.on('event-from-main', (event, data) => {
+       ipcRenderer.on('OPD_update_api_limit', (event, data) => {
       func(data)
     })
+    }, 
+    opd_notification_sound_play(func){
+        const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
+        ipcRenderer.on('OPD_notification_sound', (event, data) => {
+            func(`file:///${arg_resource_path}${data}`)
+        })
+    },
+    async opd_custom_dialog(title, detail){
+        const res = await ipcRenderer.invoke('open_custom_dialog', {title:title, detail:detail});
+        return res;
     }
 });

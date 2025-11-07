@@ -38,10 +38,21 @@
         <section class="setting_list">
             <h3>外観</h3>
             <div><label for="opd_color_mode">カラーモード</label><select id="opd_color_mode"><option value="0">システム</option><option value="1">ライト</option><option value="2">ダーク</option></select></div>
+            <h3>スクロールバー(Misskeyカラム以外有効)</h3>
+            <div><label for="opd_scrollbar_type">スクロールバーを細くする(次回起動時有効)</label><input id="opd_scrollbar_type" type="checkbox"></div>
         </section>
         <section class="setting_list">
             <h3>ウィンドウ設定</h3>
+            <div><label for="opd_hide_promotion">プロモーションを非表示にする(Twitterのみ有効/次回起動時有効)</label><input id="opd_hide_promotion" type="checkbox"></div>
+        </section>
+        <section class="setting_list">
+            <h3>コンテンツ制御</h3>
             <div><label for="opd_close_btn_mini">閉じるボタンを最小化にする</label><input id="opd_close_btn_mini" type="checkbox"></div>
+        </section>
+        <section class="setting_list">
+            <h3>開発者向け機能</h3>
+            <p><input id="opd_rebuild_sys_settings" type="button" value="システム設定を初期化"></p>
+            <p><input id="opd_rebuild_profile" type="button" value="プロファイルを初期化"></p>
         </section>
         <section class="setting_list">
             <h3>システム操作</h3>
