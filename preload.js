@@ -12,6 +12,12 @@ contextBridge.exposeInMainWorld("opd_system",{
         //console.log(process)
         return `file:///${arg_resource_path}`;
     },
+    post_column_helper_script(){
+        const helper_script = ipcRenderer.invoke('OPD_Columun_HelperScripts', {message:"get_auto_reload"}).then((res)=>{
+            return res;
+        })
+        return helper_script;
+    },
     opd_version(){
         const opd_version = process.argv.find(arg => arg.startsWith('--opd_version')).split('=')[1];
         return opd_version;

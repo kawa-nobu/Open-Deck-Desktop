@@ -440,6 +440,15 @@ ipcMain.handle('OPD_StoreReset', function(e, data){
 }
   return true;
 })
+//ヘルパースクリプト
+ipcMain.handle('OPD_Columun_HelperScripts', async function(e, data){
+  debug_stdout(data)
+  switch(data.message){
+    case 'get_auto_reload':
+      const read_auto_reload_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/auto_reload_helper.js`, {encoding:'utf-8'});
+      return read_auto_reload_script;
+  }
+})
 //システム設定表示
 const system_settings_createWindow = () => {
   system_settings_window = new BrowserWindow({
