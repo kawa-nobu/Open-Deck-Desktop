@@ -8,6 +8,7 @@ if(prototype_version){
 }
 //
 const url_path = new URL(location.href);
+let is_shift_pressed = false;
 let profile_store;
 let last_load_profile = 0;
 const ui_icon_define = {
@@ -21,6 +22,7 @@ const ui_icon_define = {
     column_widesize:"icon/column_w_size.svg",
     column_add_1:"icon/column_add_1st.svg",
     column_add_2:"icon/column_add_2nd.svg",
+    add_post_column:"icon/post.svg",
     add_timeline_column:"icon/tl_column.svg",
     add_notification_column:"icon/notice_column.svg",
     add_explore_column:"icon/exp_column.svg",
@@ -37,6 +39,13 @@ function unix_time_mmss(input){
     const date = new Date(input * 1000);
     return date.toLocaleTimeString();
 }
+//ショートカットキー用に shift キーが押されていることを検出
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Shift') is_shift_pressed = true;
+});
+document.addEventListener('keyup', (event) => {
+    if (event.key === 'Shift') is_shift_pressed = false;
+});
 //ランダム文字列生成
 function random_string(){
     return crypto.randomUUID().replace(/(-|[0-9])/g, "");
@@ -260,6 +269,14 @@ async function run(settings, opd_system_settings){
     .dsp_btn_parent:hover{
         background: #d5d5d5;
         cursor: pointer;
+    }
+    .dsp_btn_add_post_img{
+        filter: brightness(0) saturate(100%) invert(11%) sepia(16%) saturate(13%) hue-rotate(322deg) brightness(107%) contrast(80%);
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-image: url(${opd_system.load_resource(ui_icon_define.add_post_column)});
+        height: 69%;
+        width: 69%;
     }
     .dsp_btn_add_tl_img{
         filter: brightness(0) saturate(100%) invert(11%) sepia(16%) saturate(13%) hue-rotate(322deg) brightness(107%) contrast(80%);
@@ -558,7 +575,7 @@ async function run(settings, opd_system_settings){
         .dsp_column_draggable_true, .dsp_column_title{
             background-color: #2e2e2e !important;
         }
-        .dsp_btn_add_tl_img, .dsp_btn_add_ntfc_img, .dsp_btn_add_explr_img, .dsp_btn_second_rack_img, .dsp_btn_profile_add_img, .dsp_btn_sesssion_manager_add_img, .dsp_btn_profile_delete_img, .dsp_btn_system_settings_add_img, .dsp_column_move_icon, .opd_ui_icon_color{
+        .dsp_btn_add_post_img, .dsp_btn_add_tl_img, .dsp_btn_add_ntfc_img, .dsp_btn_add_explr_img, .dsp_btn_second_rack_img, .dsp_btn_profile_add_img, .dsp_btn_sesssion_manager_add_img, .dsp_btn_profile_delete_img, .dsp_btn_system_settings_add_img, .dsp_column_move_icon, .opd_ui_icon_color{
             filter: brightness(0) saturate(100%) invert(48%) sepia(0%) saturate(93%) hue-rotate(266deg) brightness(93%) contrast(86%);
         }
         #api_limit_status:hover {
@@ -716,6 +733,7 @@ async function run(settings, opd_system_settings){
     let column_settings_panel_othersns = `<div class="dsp_column_settings_panel"><div class="dsp_column_settings_panel_content"><h2>設定</h2><div class="dsp_column_settings_list"><div class="dsp_column_settings_content_div">カラム幅<span><select class="opd_column_size_preset"><option value="0">小</option><option value="1">中</option><option value="2">大</option><option value="3">カスタム</option></select></span></div><div class="dsp_column_settings_content_div">カラム幅カスタム<span><input type="button" class="column_width_btn" value="カスタム設定" style="vertical-align: text-top;font-size: 0.8rem;"/></span></div></div><div class="dsp_column_settings_panel_close_btn_wrap"><input type="button" class="dsp_column_settings_panel_close_btn" value="設定を閉じる" style="vertical-align: text-top;font-size: 0.8rem;"/></div></div></div>` ;
     let default_element = {
         empty_column:{html:`<section draggable="false" id="column_%column_num%" class="dsp_column_draggable_false dsp_column dsp_column_emptycolumn"><div opd_column_type="empty_column" opd_column_width="%column_width_num%" style="height: 100%;min-width: 30rem;display: flex;align-items: center;justify-content: center;"><div><img src="${opd_system.load_resource(ui_icon_define.column_add_1)}" style="filter: brightness(0) saturate(100%) invert(61%) sepia(13%) saturate(13%) hue-rotate(335deg) brightness(89%) contrast(79%);"><p>ツールバーからカラムを追加</p></div></div></section>`},
+        post:{html:`<section draggable="true" id="column_%column_num%" class="dsp_column_draggable_true dsp_column"><div opd_column_type="post" opd_account_session="%column_account_session_name_setting%" opd_provider="twitter" opd_column_width="%column_width_num%" style="height: 100%;width: %column_width_num%rem;min-width: 1rem;"><div class="column_bar" style="height: 20px;"><span class="dsp_column_title"><div class="dsp_column_move_icon_parent"><span class="dsp_column_move_icon"></span><span>Post</span><span class="dsp_column_now_session">%column_account_session_name_dsp%</span></div></span>${othersns_default_element_bar}<div class="dsp_column_close_btn_wrap"><span class="dsp_column_btn"><label class="dsp_column_close_btn opd_ui_icon_color" title="カラムを閉じる"><input type="button" class="column_close_btn" value="X"/></label></span></div></div>${column_settings_panel_othersns}<webview plugins preload="${opd_system.load_webview_preload_script()}" partition="%column_account_session_name%" auto_reload_mouse_hover="false" allow="fullscreen" src="https://x.com/compose/post" type="text/html" style="width: 100%;height: 100%;" opd_init_webview></webview></div></section>`},
         second_empty_column:{html:`<section draggable="false" id="column_%column_num%" class="dsp_column_draggable_false dsp_column dsp_column_second_emptycolumn"><div opd_column_type="second_empty_column" opd_column_width="%column_width_num%" style="height:100%;min-width: 30rem;overflow: hidden;display: flex;align-items: center;justify-content: center;"><div><img src="${opd_system.load_resource(ui_icon_define.column_add_2)}" style="filter: brightness(0) saturate(100%) invert(61%) sepia(13%) saturate(13%) hue-rotate(335deg) brightness(89%) contrast(79%);"><p>1段目のカラムが配置できます</p></div></div></section>`},
         home:{html:`<section draggable="true" id="column_%column_num%" class="dsp_column_draggable_true dsp_column"><div opd_column_type="home" opd_account_session="%column_account_session_name_setting%" opd_provider="twitter" opd_column_width="%column_width_num%" style="height: 100%;width: %column_width_num%rem;min-width: 1rem;"><div class="column_bar" style="height: 20px;"><span class="dsp_column_title"><div class="dsp_column_move_icon_parent"><span class="dsp_column_move_icon"></span><span>Timeline</span><span class="dsp_column_now_session">%column_account_session_name_dsp%</span></div></span>${default_element_bar}<div class="dsp_column_close_btn_wrap"><span class="dsp_column_btn"><label class="dsp_column_close_btn opd_ui_icon_color" title="カラムを閉じる"><input type="button" class="column_close_btn" value="X"/></label></span></div></div>${column_settings_panel}<webview plugins preload="${opd_system.load_webview_preload_script()}" partition="%column_account_session_name%" auto_reload_mouse_hover="false" allow="fullscreen" src="https://x.com/home" type="text/html" style="width: 100%;height: 100%;" opd_init_webview></webview></div></section>`},
         notification:{html:`<section draggable="true" id="column_%column_num%" class="dsp_column_draggable_true dsp_column"><div opd_column_type="notification" opd_account_session="%column_account_session_name_setting%" opd_provider="twitter" opd_column_width="%column_width_num%" style="height: 100%;width: %column_width_num%rem;min-width: 1rem;"><div class="column_bar" style="height: 20px;"><span class="dsp_column_title"><div class="dsp_column_move_icon_parent"><span class="dsp_column_move_icon"></span><span>Notifications</span><span class="dsp_column_now_session">%column_account_session_name_dsp%</span></div></span>${default_element_bar}<div class="dsp_column_close_btn_wrap"><span class="dsp_column_btn"><label class="dsp_column_close_btn opd_ui_icon_color" title="カラムを閉じる"><input type="button" class="column_close_btn" value="X"/></label></span></div></div>${column_settings_panel_no_auto}<webview plugins preload="${opd_system.load_webview_preload_script()}" partition="%column_account_session_name%" allow="fullscreen" src="https://x.com/notifications" type="text/html" style="width: 100%;height: 100%;" opd_init_webview></webview></div></section>`},
@@ -726,7 +744,7 @@ async function run(settings, opd_system_settings){
     let ins_html = document.createElement("div");
     ins_html.id = "opd_main_element";
     ins_html.style = "position: fixed;z-index: 9999;top:0;left:0;width: 100%;height: 100%;background: white;display: flex;flex-direction: row;overflow: hidden;";
-    let side_bar = `<section class="dsp_column dsp_sidebar" style="position:fixed;z-index:999;height:98%;"><div draggable="false" class="dsp_column_draggable_false" opd_column_type="dsp_column" opd_column_width="%column_width_num%" style="height:100%;min-width: 60px;max-width: 60px;text-align: center;background-color: white;"><div class="main_bar_functions"><div class="opd_ui_logo_parent" title="Open-Deck\r\nPrototype\r\nv${opd_system.opd_version()}"><div class="opd_ui_logo"></div><span class="opd_version_span">${opd_system.opd_version()}</span></div><hr><p class="opd_debug_menu">Debug<br><input type="button" id="init_settings" value="初期化" /><br><input type="button" id="profile_load_save" value="プロファイルローダー" /><br><input type="button" id="dnr_reload" value="dNR_Reload" /><br><input type="button" id="ext_reload" value="拡張機能再読み込み" /><br><div id="api_limit_status">API</div><hr><div class="dsp_btn_parent" id="add_timeline" title="タイムラインカラム追加"><div class="dsp_btn_add_tl_img"></div></div><div class="dsp_btn_parent" id="add_notify" title="通知カラム追加"><div class="dsp_btn_add_ntfc_img"></div></div><div class="dsp_btn_parent" id="add_explore" title="Explore(ユニバーサル)カラム追加"><div class="dsp_btn_add_explr_img"></div></div><hr><div class="dsp_btn_parent" id="add_misskey" title="Misskeyカラム追加"><div class="dsp_btn_add_misskey_img">Mi</div></div><div class="dsp_btn_parent" id="add_bsky" title="BlueSkyカラム追加"><div class="dsp_btn_add_bsky_img">BS</div></div><hr><div class="dsp_btn_parent" title="カラム段切り替え" id="second_rack"><div class="dsp_btn_second_rack_img"></div></div><hr><div class="dsp_btn_parent" title="システム設定" id="open_system_settings"><div class="dsp_btn_system_settings_add_img"></div></div><div class="dsp_btn_parent" title="アカウントセッションマネージャー" id="open_session_manager"><div class="dsp_btn_sesssion_manager_add_img"></div></div><div class="dsp_btn_parent" title="プロファイル保存" id="profile_save"><div class="dsp_btn_profile_add_img"></div></div><div class="dsp_btn_parent" title="プロファイル削除" id="profile_delete"><div class="dsp_btn_profile_delete_img"></div></div>${profile_list_html}</p></div></div></section><section draggable="false" class="dsp_column_draggable_false dsp_column dsp_sidebar"><div opd_column_type="main_bar_empty_column" id="main_bar_empty_column" style="height:100%;min-width: 60px;max-width: 60px;"></div></section>`;
+    let side_bar = `<section class="dsp_column dsp_sidebar" style="position:fixed;z-index:999;height:98%;"><div draggable="false" class="dsp_column_draggable_false" opd_column_type="dsp_column" opd_column_width="%column_width_num%" style="height:100%;min-width: 60px;max-width: 60px;text-align: center;background-color: white;"><div class="main_bar_functions"><div class="opd_ui_logo_parent" title="Open-Deck\r\nPrototype\r\nv${opd_system.opd_version()}"><div class="opd_ui_logo"></div><span class="opd_version_span">${opd_system.opd_version()}</span></div><hr><p class="opd_debug_menu">Debug<br><input type="button" id="init_settings" value="初期化" /><br><input type="button" id="profile_load_save" value="プロファイルローダー" /><br><input type="button" id="dnr_reload" value="dNR_Reload" /><br><input type="button" id="ext_reload" value="拡張機能再読み込み" /><br><div id="api_limit_status">API</div><hr><div class="dsp_btn_parent" id="add_post" title="ポストカラム追加"><div class="dsp_btn_add_post_img"></div></div><hr><div class="dsp_btn_parent" id="add_timeline" title="タイムラインカラム追加"><div class="dsp_btn_add_tl_img"></div></div><div class="dsp_btn_parent" id="add_notify" title="通知カラム追加"><div class="dsp_btn_add_ntfc_img"></div></div><div class="dsp_btn_parent" id="add_explore" title="Explore(ユニバーサル)カラム追加"><div class="dsp_btn_add_explr_img"></div></div><hr><div class="dsp_btn_parent" id="add_misskey" title="Misskeyカラム追加"><div class="dsp_btn_add_misskey_img">Mi</div></div><div class="dsp_btn_parent" id="add_bsky" title="BlueSkyカラム追加"><div class="dsp_btn_add_bsky_img">BS</div></div><hr><div class="dsp_btn_parent" title="カラム段切り替え" id="second_rack"><div class="dsp_btn_second_rack_img"></div></div><hr><div class="dsp_btn_parent" title="システム設定" id="open_system_settings"><div class="dsp_btn_system_settings_add_img"></div></div><div class="dsp_btn_parent" title="アカウントセッションマネージャー" id="open_session_manager"><div class="dsp_btn_sesssion_manager_add_img"></div></div><div class="dsp_btn_parent" title="プロファイル保存" id="profile_save"><div class="dsp_btn_profile_add_img"></div></div><div class="dsp_btn_parent" title="プロファイル削除" id="profile_delete"><div class="dsp_btn_profile_delete_img"></div></div>${profile_list_html}</p></div></div></section><section draggable="false" class="dsp_column_draggable_false dsp_column dsp_sidebar"><div opd_column_type="main_bar_empty_column" id="main_bar_empty_column" style="height:100%;min-width: 60px;max-width: 60px;"></div></section>`;
     let main_column_html = ``;
     let second_column_html = ``;
     //設定2段
@@ -894,6 +912,9 @@ async function run(settings, opd_system_settings){
                             preload_desc_array.push("<!-2段目終了-!>");
                             preload_desc_count = 0;
                             break;
+                        case "post":
+                            preload_desc_array.push(`${preload_desc_count}-ポストカラム`);
+                            break;
                         case "home":
                             preload_desc_array.push(`${preload_desc_count}-タイムラインカラム`);
                             break;
@@ -1060,7 +1081,7 @@ async function run(settings, opd_system_settings){
                             el_banner_key = key;
                         })
                     }
-                    if(opd_column_banner_checkbox.checked != true){
+                    if(opd_column_banner_checkbox?.checked != true){
                         //console.log(this)
                         //this.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = `header[role="banner"]{display:none};`;
                         this.insertCSS('header[role="banner"]{display:none};').then((key)=>{
@@ -1076,7 +1097,7 @@ async function run(settings, opd_system_settings){
                     }
                     
                     //トップ検索欄等削除適用
-                    if(opd_column_top_visible_checkbox.checked != true){
+                    if(opd_column_top_visible_checkbox?.checked != true){
                         const top_back_btn_color_css = 'button[data-testid="app-bar-back"]{background-color: #ffffff33 !important;}button[data-testid="app-bar-back"]:hover{background-color: #ffffff4d !important;}';
                         if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "explore"){
                             console.log("explore")
@@ -1145,6 +1166,13 @@ async function run(settings, opd_system_settings){
                             }
                             //this.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = ``;
                             break;
+                    }
+                    //ポストカラムの動作
+                    if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") === "post"){
+                        //const post_column_window = opd_column_div.querySelector("webview").contentWindow;
+                        //文章校正機能
+                        /*const ext_text_review = new OpdExtTextReview();
+                        ext_text_review.Init(post_column_window, ui_icon_define);*/
                     }
                 }
             })
@@ -1344,7 +1372,7 @@ async function run(settings, opd_system_settings){
                     if(mode != "session_set"){
                         //console.log(opd_column_div.querySelector(".opd_banner").checked)
                         //バナーチェックイベント
-                        opd_column_banner_checkbox.addEventListener("change", async function(){
+                        opd_column_banner_checkbox?.addEventListener("change", async function(){
                             column_settings_save("", last_load_profile);
                             //console.log(this.closest("div[opd_column_type]").querySelector("webview"))
                             let banner_mode_target_object = this.closest("div[opd_column_type]").querySelector("webview");
@@ -1371,7 +1399,7 @@ async function run(settings, opd_system_settings){
                         });
 
                         //トップ検索欄等削除イベント
-                        opd_column_top_visible_checkbox.addEventListener("change", async function(){
+                        opd_column_top_visible_checkbox?.addEventListener("change", async function(){
                             
                             column_settings_save("", last_load_profile);
                             let topvisible_mode_target_object = this.closest("div[opd_column_type]").querySelector("webview");
@@ -1613,6 +1641,22 @@ async function run(settings, opd_system_settings){
     //プロファイルローダー
     document.getElementById("profile_load_save").addEventListener("click", function(){
         window.open(opd_system.load_resource("profile_debug.html"), "OPD-Profile-Loader", 'width=720, height=600');
+    });
+    //ポストカラム追加
+    //TODO: カラム追加周りの処理をもっと簡略化すること
+    document.getElementById("add_post").addEventListener("click", function(){
+        const empty_column = document.querySelector(".dsp_column_emptycolumn");
+        const first_column = empty_column?.closest('div')?.querySelector('section[draggable="true"]');
+        const add_target_column = (is_shift_pressed && first_column) ? first_column : empty_column;
+
+        const new_column = default_element["post"]["html"].replaceAll("%column_num%", create_random_id()).replaceAll("%column_width_num%", "30").replaceAll("%column_account_session_name_setting%", "default").replaceAll("%column_account_session_name%", "").replaceAll("%column_account_session_name_dsp%", "");
+        add_target_column.insertAdjacentHTML("beforebegin", new_column);
+        add_target_column.scrollIntoView({behavior: "smooth",inline: "end"});
+        const all_webview = document.querySelectorAll('#main_rack_element webview[opd_init_webview]');
+        append_object_css("add_column", all_webview);
+        column_dd("add_column", all_webview);
+        column_close("add_column", all_webview);
+        column_settings_save("", last_load_profile);
     });
     //タイムラインカラム追加
     document.getElementById("add_timeline").addEventListener("click", function(){
