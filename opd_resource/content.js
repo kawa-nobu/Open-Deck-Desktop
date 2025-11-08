@@ -1161,6 +1161,15 @@ async function run(settings, opd_system_settings){
                 let opd_column_auto_reload_time_reload = opd_column_div.querySelector(".opd_a_reload_time_setting");
                 let opd_column_tw_view_mode_opt = opd_column_div.querySelector(".opd_tw_view_mode");
                 let opd_column_hide_rt_tweet_opt = opd_column_div.querySelector(".opd_hide_rt_tweet");
+                let column_content_reload = null;
+                //自動更新関連仕込み
+                if(mode != "session_set"){
+                    const column_type = opd_column_div.getAttribute("opd_column_type");
+                    if(column_type === "home" || column_type === "explore"){
+                        column_content_reload = new OpdExtAutoReload();
+                        column_content_reload.Init(opd_column_div.querySelector("webview"));
+                    }
+                }
                 //設定パネルイベント
                 if(mode != "session_set"){
                     opd_column_div.querySelector(".opd_settings_btn").addEventListener("click", function(){
@@ -1293,11 +1302,11 @@ async function run(settings, opd_system_settings){
                         opd_column_div.querySelector("webview").addEventListener("mouseleave", function(){
                             this.setAttribute("auto_reload_mouse_hover", "false");
                         });
-                       const auto_reload_target_elem = this;
+                        const opd_column_webview = opd_column_div.querySelector("webview");
                         //console.log(opd_column_auto_reload_checkbox)
                         if(mode != "session_set"){
                             opd_column_auto_reload_time_reload.addEventListener("change", function(){
-                                const auto_reload_time = auto_reload_target_elem.closest('div[opd_column_type]').querySelector(".opd_a_reload_time_setting");
+                                const auto_reload_time = opd_column_div.querySelector(".opd_a_reload_time_setting");
                                 if(Number(auto_reload_time.value) >= 1){
                                     opd_system.opd_custom_dialog('自動更新設定', `自動更新の秒数を${auto_reload_time.value}秒に設定しました`);
                                     column_settings_save("", last_load_profile);
@@ -1311,30 +1320,22 @@ async function run(settings, opd_system_settings){
                         //初期チェック動作
                         if(opd_column_auto_reload_checkbox.checked){
                             //console.log("init update!")
-                            const auto_reload_time_input = auto_reload_target_elem.closest('div[opd_column_type]').querySelector(".opd_a_reload_time_setting");
+                            const auto_reload_time_input = opd_column_div.querySelector(".opd_a_reload_time_setting");
                             const auto_reload_load_time = Number(auto_reload_time_input.value) * 1000;
                             auto_reload_time_input.disabled = true;
-                            auto_reload_int = setInterval(async function(){
+                            auto_reload_int = setInterval(function(){
                                 //console.log("update!")
-                                //console.log(auto_reload_target_elem.contentWindow)
-                                const now_url = new URL(auto_reload_target_elem.getURL());
-                                if(now_url.pathname == "/home"){
-                                    if(auto_reload_target_elem.getAttribute("auto_reload_mouse_hover") == "false"){
-                                        await auto_reload_target_elem.insertCSS('div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){height:initial;}').then((key)=>{
-                                            auto_reload_target_elem.executeJavaScript(`console.log("update");document.querySelector('h2[role="heading"][dir="ltr"]').click()`).then(()=>{
-                                                auto_reload_target_elem.removeInsertedCSS(key)
-                                            })
-                                        })
-                                    }
-                                };
-                                if(now_url.pathname == "/search"){
-                                    reload_test += 1;
-                                    //console.log(reload_test);
-                                    if(auto_reload_target_elem.getAttribute("auto_reload_mouse_hover") == "false"){
-                                        auto_reload_target_elem.executeJavaScript(`window.scrollTo(0, 500)`);
-                                        setTimeout(function(){
-                                            auto_reload_target_elem.executeJavaScript(`window.scrollTo(0, 0)`);
-                                        }, 10);
+                                //console.log(opd_column_div.contentWindow)
+                                const now_url = new URL(opd_column_webview.getURL());
+                                const path_name = now_url.pathname;
+                                if(['/home', '/search'].includes(path_name) || path_name.startsWith('/i/lists')){
+                                    if(opd_column_webview.getAttribute("auto_reload_mouse_hover") == "false"){
+                                        if (column_content_reload){
+                                            column_content_reload.Reload(opd_column_webview);
+                                            setTimeout(() => {
+                                                opd_column_webview.executeJavaScript("window.scrollTo({ top: 0, behavior: 'auto' })");
+                                            }, 100);
+                                        }
                                     }
                                 };
                             }, auto_reload_load_time);
@@ -1446,32 +1447,22 @@ async function run(settings, opd_system_settings){
                                 const auto_reload_time = Number(auto_reload_time_input.value) * 1000;
                                 if(this.checked){
                                     auto_reload_time_input.disabled = true;
-                                    auto_reload_int = setInterval(async function(){
-                                        const now_url = new URL(auto_reload_target_object.getURL());
-                                        //auto_reload_target_object.executeJavaScript('console.log("reload")')
+                                    auto_reload_int = setInterval(function(){
                                         //console.log("update!")
-                                        //console.log(auto_reload_target_object.contentWindow)
-                                        if(now_url.pathname == "/home"){
+                                        const now_url = new URL(auto_reload_target_object.getURL());
+                                        const path_name = now_url.pathname;
+                                        if(['/home', '/search'].includes(path_name) || path_name.startsWith('/i/lists')){
                                             if(auto_reload_target_object.getAttribute("auto_reload_mouse_hover") == "false"){
-                                                //auto_reload_target_object.contentWindow.document.querySelector('[aria-selected="true"]').click();
-                                                await auto_reload_target_object.insertCSS('div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){height:initial;}').then((key)=>{
-                                                    auto_reload_target_object.executeJavaScript(`console.log("update");document.querySelector('h2[role="heading"][dir="ltr"]').click()`).then(()=>{
-                                                        auto_reload_target_object.removeInsertedCSS(key)
-                                                    })
-                                                })
-                                            }
-                                        };
-                                        if(now_url.pathname == "/search"){
-                                            if(auto_reload_target_object.getAttribute("auto_reload_mouse_hover") == "false"){
-                                                auto_reload_target_object.executeJavaScript(`window.scrollTo(0, 500)`);
-                                                //auto_reload_target_object.contentWindow.scrollTo(0, 300);
-                                                setTimeout(function(){
-                                                    auto_reload_target_object.executeJavaScript(`window.scrollTo(0, 0)`);
-                                                    //auto_reload_target_object.contentWindow.scrollTo(0, 0);
-                                                }, 10);
+                                                if (column_content_reload){
+                                                    column_content_reload.Reload(auto_reload_target_object);
+                                                    setTimeout(() => {
+                                                        auto_reload_target_object.executeJavaScript("window.scrollTo({ top: 0, behavior: 'auto' })");
+                                                    }, 100);
+                                                }
                                             }
                                         };
                                     }, auto_reload_time);
+
                                     //console.log(auto_reload_time)
                                     column_settings_save("", last_load_profile);
                                 }else{
