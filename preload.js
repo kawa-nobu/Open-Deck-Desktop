@@ -83,12 +83,6 @@ contextBridge.exposeInMainWorld("opd_system",{
       func(data)
     })
     }, 
-    opd_notification_sound_play(func){
-        const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
-        ipcRenderer.on('OPD_notification_sound', (event, data) => {
-            func(`file:///${arg_resource_path}${data}`)
-        })
-    },
     async opd_custom_dialog(title, detail){
         const res = await ipcRenderer.invoke('open_custom_dialog', {title:title, detail:detail});
         return res;

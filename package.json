@@ -20,7 +20,6 @@
     "files": [
       "opd_resource/*",
       "opd_resource/icon/*",
-      "opd_resource/sound/*",
       "package.json",
       "main.js",
       "about_opd_preload.js",

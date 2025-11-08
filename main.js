@@ -303,12 +303,6 @@ app.on("ready", ()=>{
             opd_main_window.webContents.send('OPD_update_api_limit', access_limit);
       });
     }
-    //通知処理
-    if(details.url == 'https://x.com/i/api/2/badge_count/badge_count.json?supports_ntab_urt=1'){
-      /*debug_stdout(details.url)
-      opd_main_window.webContents.send('OPD_notification_sound', `sound/notification_sound.wav`);
-      new Notification({title:"通知取得", body: "通知です", silent: true}).show();*/
-    }
   });
 })
 //セッションマネージャー関連処理

@@ -79,14 +79,6 @@ opd_system.opd_api_limit(function(api_access_limit){
 })
 if(true){
    window.addEventListener("load", function(){
-    //通知音再生
-    document.body.insertAdjacentHTML("afterend", '<audio id="opd_notification_sound" type="audio/wav"></audio>');
-    opd_system.opd_notification_sound_play(function(sound_path){
-        const notification_audio_tag = document.getElementById('opd_notification_sound');
-        //console.log(sound_path)
-        notification_audio_tag.src = sound_path;
-        notification_audio_tag.play();
-    })
     init();
     })
     //chrome.runtime.sendMessage({message: "dnr_upd"});
