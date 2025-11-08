@@ -4,7 +4,7 @@ class OpdExtAutoReload {
         this.opd_reload_token = null;
         this.Init = async (column_webview) => {
             //ヘルパースクリプト追加
-            column_webview.executeJavaScript(await opd_system.post_column_helper_script())
+            column_webview.executeJavaScript(await opd_system.auto_reload_helper_script())
 
             this.opd_reload_token = crypto.randomUUID();
             setTimeout(() => {

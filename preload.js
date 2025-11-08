@@ -12,7 +12,7 @@ contextBridge.exposeInMainWorld("opd_system",{
         //console.log(process)
         return `file:///${arg_resource_path}`;
     },
-    post_column_helper_script(){
+    auto_reload_helper_script(){
         const helper_script = ipcRenderer.invoke('OPD_Columun_HelperScripts', {message:"get_auto_reload"}).then((res)=>{
             return res;
         })
