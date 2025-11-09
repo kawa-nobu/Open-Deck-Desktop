@@ -644,7 +644,7 @@ async function run(settings, opd_system_settings){
         display: flex;
         margin: 1vh 0 0 0;
         width: 30rem;
-        height: 15rem;
+        max-height: 25rem;
         background: white;
         border-radius: 10px;
         flex-direction: column;
@@ -654,6 +654,8 @@ async function run(settings, opd_system_settings){
     .electron_opd_select_as_content{
         margin-top: 1.5rem;
         width: 100%;
+        height: 100%;
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -661,7 +663,7 @@ async function run(settings, opd_system_settings){
     .electron_opd_select_as_confirm_btn{
         width: 40%;
         display: flex;
-        margin-top: 2rem;
+        margin: 1rem;
         justify-content: space-around;
     }
     .electron_opd_select_as_bg table{
