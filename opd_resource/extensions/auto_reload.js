@@ -12,7 +12,6 @@ class OpdExtAutoReload {
                     window.dispatchEvent(new CustomEvent('opd_column_reload_init', {
                         detail: JSON.stringify(${JSON.stringify({ token:this.opd_reload_token })})
                     }));
-                    console.log("executeOK")
                 `);
             }, 10);
         }

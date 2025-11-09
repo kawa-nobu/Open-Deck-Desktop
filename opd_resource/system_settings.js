@@ -1,19 +1,15 @@
 window.addEventListener("load", async function(){
     const get_settings_data = await opd_system.opd_get_data_store("opd_system_settings");
     const settings_data_obj = JSON.parse( get_settings_data);
-    console.log(settings_data_obj);
     Object.keys(settings_data_obj).forEach((key)=>{
-        console.log(settings_data_obj[key])
         switch(key){
             case 'color_mode':
                 document.getElementById('opd_color_mode').value = settings_data_obj[key];
                 break;
             case 'scrollbar_thin_mode':
-                console.log(settings_data_obj[key])
                 document.getElementById('opd_scrollbar_type').checked = settings_data_obj[key];
                 break;
             case 'contents_hide_promotion':
-                console.log(settings_data_obj[key])
                 document.getElementById('opd_hide_promotion').checked = settings_data_obj[key];
                 break;
             case 'window_close_to_minimize':

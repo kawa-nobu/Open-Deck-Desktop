@@ -1,4 +1,3 @@
-// 文章校正機能で使用
 (() => {
     class OpdExtTextReviewHelper {
         constructor() {

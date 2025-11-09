@@ -55,9 +55,7 @@ function random_string(){
 let api_limit_obj = null;
 let api_limit_dsc_obj = {time_line:"", recommend_timeline:"", search:""};
 opd_system.opd_api_limit(function(api_access_limit){
-    //console.log(api_access_limit)
     if(api_access_limit != undefined){
-        //console.log(changes)
         api_limit_obj = api_access_limit;
         const api_linit_status_btn = document.querySelector("#api_limit_status");
         if(api_linit_status_btn != null){
@@ -93,18 +91,15 @@ if(true){
     })
     //chrome.runtime.sendMessage({message: "dnr_upd"});
     async function init(){
-        //console.log("Welcome to Open-Deck!");
         let settings_local_strage_settings = JSON.parse(await opd_system.opd_get_data_store('opd_settings'));
         
         init_settings_load(settings_local_strage_settings);
         async function init_settings_load(value){
-            console.log(value?.opd_settings)
             const opd_sys_settings = JSON.parse(await opd_system.opd_get_data_store('opd_system_settings'));
             if(value?.opd_settings == null){
                 last_load_profile = 0;
                 settings_init();
             }else{
-                console.log(value.opd_settings.last_load_profile)
                 if(value.opd_settings.last_load_profile == null){
                     if(await opd_system.opd_custom_dialog('プロファイルデータエラー', "プロファイルデータが壊れています。\r\n初期化するにはOKを押してください。\r\n初期化せずに続行する場合はキャンセルを押してください。")){
                     }else{
@@ -113,15 +108,12 @@ if(true){
                 }else{
                     last_load_profile = value.opd_settings.last_load_profile;
                 }
-                //console.log(last_load_profile);
             }
             await opd_system.opd_get_data_store('opd_profile_store').then(function (store_value){
-                console.log(JSON.parse(store_value))
                 profile_store = JSON.parse(store_value);
                 //RUN
                 let ext_update_flag = null;
                 let ext_settings = null;
-                console.log(value)
                 if(value.opd_settings != null){
                     if(value != opd_system.opd_version()){
                         ext_update_flag = true;
@@ -156,14 +148,12 @@ if(true){
                     }
                     ext_settings = {column_settings:profile_store[last_load_profile].profile};
                 }
-                console.log(ext_settings);
                 run(ext_settings, opd_sys_settings);
             });
         };
     }
 }
 async function run(settings, opd_system_settings){
-    //console.log(settings)
     let profile_list_html;
     let profile_list_btn_html = "";
     //プロファイルリスト初期化
@@ -171,7 +161,6 @@ async function run(settings, opd_system_settings){
         profile_list_btn_html += `<div class="dsp_btn_parent" title="プロファイルを切り替える" id="userProfile-${index}"><div class="dsp_btn_change_profile_btn">P${index}</div></div>`;//<div class="profile_list"><input type="button" id="userProfile-${index}" value="P${index}"></div>
     }
     profile_list_html = `<div class="profile_val_now" title="使用中のプロファイル">${last_load_profile}</div><div class="dsp_profile_list"><div id="profile_btn_list">${profile_list_btn_html}</div>`;
-    //console.log(profile_list_btn_html)
     //CSSタグ追加
     document.querySelector("head").insertAdjacentHTML("afterbegin", `<style second_column_css></style>
     <style opd_default_css>
@@ -757,13 +746,9 @@ async function run(settings, opd_system_settings){
     //スクロール検出用
     let scroll_block = true;
     //
-    //console.log(settings.column_settings.length)
     for (let index = 0; index < settings.column_settings.length; index++) {
-        //console.log(default_element)
         for (let default_index = 0; default_index < Object.keys(default_element).length; default_index++) {
-            //console.log(settings.column_settings[index].type+"-"+Object.keys(default_element))
             if(settings.column_settings[index].type == Object.keys(default_element)[default_index]){
-                //console.log(default_element[Object.keys(default_element)[default_index]]["html"])
                 let banner_checked = "";
                 let init_top_visible_checked = "";
                 let init_pinned_checked = "";
@@ -784,7 +769,6 @@ async function run(settings, opd_system_settings){
                 //アカウントセッション
                 if(settings.column_settings[index].account_session_name != null && settings.column_settings[index].account_session_name != "default"){
                     const session_store = await opd_system.opd_get_session_store();
-                    console.log(settings.column_settings[index].account_session_name)
                     session_store[settings.column_settings[index].sns_provider].forEach((session)=>{
                         if(session.session_name == settings.column_settings[index].account_session_name){
                             init_account_sesion_name = session.session_name;
@@ -893,7 +877,6 @@ async function run(settings, opd_system_settings){
         //プロファイルリスト切替イベント初期化
         for (let index = 0; index < profile_store.length; index++) {
             document.querySelector(`#userProfile-${index}`).addEventListener("click",async function(){
-                //console.log(profile_store[index].profile)
                 const preload_array = profile_store[index].profile;
                 let preload_desc_array = new Array(); 
                 let preload_desc_count = 0;
@@ -937,7 +920,6 @@ async function run(settings, opd_system_settings){
                     }
                     preload_desc_count += 1;
                 }
-                //console.log(preload_desc_array)
                 if(await opd_system.opd_custom_dialog('プロファイル読み込み', `プロファイル「${index}」を読み込みますか?\r\nカラム構成\r\n${preload_desc_array.join("\r\n")}`)){
                     document.querySelector("#opd_main_element").remove();
                     last_load_profile = index;
@@ -948,7 +930,6 @@ async function run(settings, opd_system_settings){
                         });
                     });
                     const column_settings = {column_settings:profile_store[index].profile};
-                    //console.log(column_settings)
                     run(column_settings, profile_store);
                 }
             })
@@ -959,7 +940,6 @@ async function run(settings, opd_system_settings){
         let column_object = null;
         if(mode == "session_set" || mode == "add_column"){
             column_object = session_webview_obj;
-            console.log(session_webview_obj)
         }else{
             column_object = document.getElementsByTagName("webview");
         }
@@ -1006,30 +986,22 @@ async function run(settings, opd_system_settings){
                     column_object[index].insertCSS(`div[data-testid="cellInnerDiv"]:has(svg[aria-hidden="true"] + div[dir="ltr"]){display: none;}`);
                 }
                 //Blueskyレイアウトずれ防止
-                console.log(column_object[index])
-                column_object[index].openDevTools()
                 if(column_object[index].closest("div[opd_column_type]").getAttribute("opd_provider") == "bluesky"){
                     column_object[index].insertCSS(`html{scrollbar-gutter: initial !important;}`);
                 }
             });
             //アカウントセッション切り替え動作
             if(mode != "session_set"){
-                console.log("set")
                 const account_session_target = column_object[index].closest("div[opd_column_type]");
                 account_session_target.getElementsByClassName("opd_change_session_btn")[0].addEventListener("click", function(){
                     const session_change_btn_parent = this.closest("div[opd_column_type]");
                     let session_name_dsp = "";
                     let session_name_setting = "default";
-                    console.log(session_change_btn_parent)
-                    console.log(session_change_btn_parent.getAttribute('opd_provider'))
                     const column_type = session_change_btn_parent.getAttribute('opd_provider');
-                    console.log(column_type)
                     electron_opd_select_session(column_type, function(session_id, session_name){
                         const before_change_webview = session_change_btn_parent.getElementsByTagName("webview")[0];
-                        console.log(session_id)
                         const new_session_webview = document.createElement('webview');
                         for (let attr of before_change_webview.attributes) {
-                            console.log(attr)
                             if(attr.name != 'partition'){
                                 new_session_webview.setAttribute(attr.name, attr.value);
                             }
@@ -1041,8 +1013,6 @@ async function run(settings, opd_system_settings){
                         }else{
                             new_session_webview.setAttribute('partition', '');
                         }
-                        console.log(before_change_webview)
-                        console.log(new_session_webview)
                         session_change_btn_parent.getElementsByTagName("webview")[0].remove();
                         session_change_btn_parent.insertAdjacentElement('beforeend', new_session_webview);
                         append_object_css("session_set", session_change_btn_parent.getElementsByTagName("webview"));
@@ -1059,15 +1029,8 @@ async function run(settings, opd_system_settings){
             let el_hide_rt_tweet = null;
             //バナー/表示モード変更
             column_object[index].addEventListener("did-finish-load", function(){
-                console.log("load")
-                console.log(this.getAttribute("opd_webview_width_only"))
-                console.log("opd_webview_width_only")
-                this.addEventListener("message", (response) => {
-                    console.log(response)
-                }) 
                 let opd_column_div = this.closest("div[opd_column_type]");
                 if(this.getAttribute("opd_webview_width_only") != ''){
-                    //console.log(this)
                     let opd_column_banner_checkbox = opd_column_div.querySelector(".opd_banner");
                     let opd_column_top_visible_checkbox = opd_column_div.querySelector(".opd_top_bar");
                     let opd_column_tw_view_mode_opt = opd_column_div.querySelector(".opd_tw_view_mode");
@@ -1078,19 +1041,16 @@ async function run(settings, opd_system_settings){
                     if(el_banner_key == null){
                         //this.contentWindow.document.querySelector("head").insertAdjacentHTML("beforeend", `<style opd_banner_css></style>`);
                         this.insertCSS('header[role="banner"]{};').then((key)=>{
-                            console.log(key)
                             el_banner_key = key;
                         })
                     }
                     if(opd_column_banner_checkbox?.checked != true){
-                        //console.log(this)
                         //this.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = `header[role="banner"]{display:none};`;
                         this.insertCSS('header[role="banner"]{display:none};').then((key)=>{
-                            console.log(key)
+
                             el_banner_key = key;
                         })
                     }else{
-                        //console.log("else")
                         //this.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = ``;
                         if(el_banner_key != null){
                             this.removeInsertedCSS(el_banner_key)
@@ -1101,33 +1061,25 @@ async function run(settings, opd_system_settings){
                     if(opd_column_top_visible_checkbox?.checked != true){
                         const top_back_btn_color_css = 'button[data-testid="app-bar-back"]{background-color: #ffffff33 !important;}button[data-testid="app-bar-back"]:hover{background-color: #ffffff4d !important;}';
                         if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "explore"){
-                            console.log("explore")
-                            console.log(this)
                             //div[data-testid="primaryColumn"] div[tabindex="0"][aria-label] div:has(form[role="search"]){display:none;}
                             //this.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1)div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1)`;
                             this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
-                                console.log(key)
                                 el_top_visible_key = key;
                             })
                         }else{
                             if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "home"){
-                                console.log("home")
                                 //this.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){display:none;} div[role="progressbar"] + div{display:none;}`;
                                 this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
-                                    console.log(key)
                                     el_top_visible_key = key;
-                                    console.log("home"+el_top_visible_key)
                                 })
                             }else{
                                 //this.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){display:none;}`;
                                 this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
-                                    console.log(key)
                                     el_top_visible_key = key;
                                 })
                             }
                         }
                     }else{
-                        //console.log("else")
                         //this.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = ``;
                         /*if(el_top_visible_key != null){
                             this.removeInsertedCSS(el_top_visible_key)
@@ -1135,9 +1087,7 @@ async function run(settings, opd_system_settings){
                     }
                     //RT非表示設定読み込み適用
                     if(opd_column_hide_rt_tweet_opt != null){
-                        console.log(opd_column_hide_rt_tweet_opt.checked)
                         if(opd_column_hide_rt_tweet_opt.checked){
-                            console.log("checked")
                             this.insertCSS('div[data-testid="cellInnerDiv"]:has(a>span[data-testid="socialContext"]){visibility: hidden; height: 0;}').then((key)=>{
                                 el_hide_rt_tweet = key;
                             })
@@ -1180,7 +1130,6 @@ async function run(settings, opd_system_settings){
             })
             //各カラム読み込み後の動作(init)
             column_object[index].addEventListener("did-finish-load", function(){
-                //console.log(this)
                 let opd_column_div = this.closest("div[opd_column_type]");
                 let opd_column_width_btn = opd_column_div.querySelector(".column_width_btn");
                 let opd_column_width_select = opd_column_div.querySelector(".opd_column_size_preset");
@@ -1203,7 +1152,6 @@ async function run(settings, opd_system_settings){
                 //設定パネルイベント
                 if(mode != "session_set"){
                     opd_column_div.querySelector(".opd_settings_btn").addEventListener("click", function(){
-                        console.log("OK")
                         const settings_panel = this.closest("div[opd_column_type]").querySelector(".dsp_column_settings_panel");
                         if(settings_panel.getAttribute("open") == null){
                             settings_panel.setAttribute("open", "");
@@ -1286,7 +1234,6 @@ async function run(settings, opd_system_settings){
                         let column_width_preset  = btn_obj.closest("div[opd_column_type]").querySelector(".opd_column_size_preset");
                         //let setting_width = prompt("カラム横幅のremを半角数字で入力\r\n目安 小:15 中:20 大:30 初期値:30\r\n11以下は入力できません", now_width);
                         let setting_width = electron_opd_msg_box('prompt', 'カラム幅設定', 'カラム横幅のremを半角数字で入力<br>目安 小:15 中:20 大:30<br>初期値:30 11以下は入力できません', '11', now_width, function(input_value){
-                            //console.log(input_value);
                             if(input_value != null){
                                 const setting_width_num = input_value;
                                 if(setting_width_num != NaN && setting_width_num > 11){
@@ -1333,7 +1280,6 @@ async function run(settings, opd_system_settings){
                             this.setAttribute("auto_reload_mouse_hover", "false");
                         });
                         const opd_column_webview = opd_column_div.querySelector("webview");
-                        //console.log(opd_column_auto_reload_checkbox)
                         if(mode != "session_set"){
                             opd_column_auto_reload_time_reload.addEventListener("change", function(){
                                 const auto_reload_time = opd_column_div.querySelector(".opd_a_reload_time_setting");
@@ -1349,13 +1295,10 @@ async function run(settings, opd_system_settings){
                         }
                         //初期チェック動作
                         if(opd_column_auto_reload_checkbox.checked){
-                            //console.log("init update!")
                             const auto_reload_time_input = opd_column_div.querySelector(".opd_a_reload_time_setting");
                             const auto_reload_load_time = Number(auto_reload_time_input.value) * 1000;
                             auto_reload_time_input.disabled = true;
                             auto_reload_int = setInterval(function(){
-                                //console.log("update!")
-                                //console.log(opd_column_div.contentWindow)
                                 const now_url = new URL(opd_column_webview.getURL());
                                 const path_name = now_url.pathname;
                                 if(['/home', '/search'].includes(path_name) || path_name.startsWith('/i/lists')){
@@ -1372,13 +1315,10 @@ async function run(settings, opd_system_settings){
                         }
                     }
                     if(mode != "session_set"){
-                        //console.log(opd_column_div.querySelector(".opd_banner").checked)
                         //バナーチェックイベント
                         opd_column_banner_checkbox?.addEventListener("change", async function(){
                             column_settings_save("", last_load_profile);
-                            //console.log(this.closest("div[opd_column_type]").querySelector("webview"))
                             let banner_mode_target_object = this.closest("div[opd_column_type]").querySelector("webview");
-                            //console.log(banner_mode_target_object.contentWindow.document.querySelector('head style[opd_banner_css]'))
                             if(el_banner_key == null){
                                 //banner_mode_target_object.contentWindow.document.querySelector("head").insertAdjacentHTML("beforeend", `<style opd_banner_css></style>`);
                                 banner_mode_target_object.insertCSS('header[role="banner"]{};').then((key)=>{
@@ -1386,13 +1326,11 @@ async function run(settings, opd_system_settings){
                                 })
                             }
                             if(this.checked != true){
-                                //console.log(this)
                                 //banner_mode_target_object.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = `header[role="banner"]{visibility: hidden; width: 0;};`;
                                 banner_mode_target_object.insertCSS('header[role="banner"]{display:none};').then((key)=>{
                                     el_banner_key = key;
                                 })
                             }else{
-                                //console.log("else")
                                 //banner_mode_target_object.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = ``;
                                 if(el_banner_key != null){
                                     banner_mode_target_object.removeInsertedCSS(el_banner_key)
@@ -1405,7 +1343,6 @@ async function run(settings, opd_system_settings){
                             
                             column_settings_save("", last_load_profile);
                             let topvisible_mode_target_object = this.closest("div[opd_column_type]").querySelector("webview");
-                            //console.log(topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]'))
                             if(el_top_visible_key == null){
                                 //topvisible_mode_target_object.contentWindow.document.querySelector("head").insertAdjacentHTML("beforeend", `<style opd_top_visible_css></style>`);
                                 topvisible_mode_target_object.insertCSS('div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){}[data-testid="app-bar-back"]{}').then((key)=>{
@@ -1414,7 +1351,6 @@ async function run(settings, opd_system_settings){
                             }
                             if(this.checked != true){
                                 const top_back_btn_color_css = 'button[data-testid="app-bar-back"]{background-color: #ffffff33 !important;}button[data-testid="app-bar-back"]:hover{background-color: #ffffff4d !important;}';
-                                //console.log(this)
                                 //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"] div[tabindex="0"][aria-label] div:has(form[role="search"]), div[data-testid="primaryColumn"] div[tabindex="0"][aria-label] div:has(h2[role="heading"]){display:none;};`;
                                 if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "explore"){
                                     //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible;}`;
@@ -1422,7 +1358,6 @@ async function run(settings, opd_system_settings){
                                         el_top_visible_key = key;
                                     })    
                                 }else{
-                                    //console.log(this.closest("div[opd_column_type]").getAttribute("opd_column_type"))
                                     if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "home"){
                                         //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;} [data-testid="app-bar-back"]{visibility: visible;} div[aria-label="ホームタイムライン"] * +div:first-of-type [data-testid="cellInnerDiv"]{} div[role="progressbar"] + div{display:none;}`;
                                         topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
@@ -1436,7 +1371,6 @@ async function run(settings, opd_system_settings){
                                     }
                                 }
                             }else{
-                                //console.log("else")
                                 //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = ``;
                                 if(el_top_visible_key != null){
                                     topvisible_mode_target_object.removeInsertedCSS(el_top_visible_key)
@@ -1478,7 +1412,6 @@ async function run(settings, opd_system_settings){
                                 if(this.checked){
                                     auto_reload_time_input.disabled = true;
                                     auto_reload_int = setInterval(function(){
-                                        //console.log("update!")
                                         const now_url = new URL(auto_reload_target_object.getURL());
                                         const path_name = now_url.pathname;
                                         if(['/home', '/search'].includes(path_name) || path_name.startsWith('/i/lists')){
@@ -1493,11 +1426,9 @@ async function run(settings, opd_system_settings){
                                         };
                                     }, auto_reload_time);
 
-                                    //console.log(auto_reload_time)
                                     column_settings_save("", last_load_profile);
                                 }else{
                                     auto_reload_time_input.disabled = false;
-                                    //console.log("update stop!")
                                     clearInterval(auto_reload_int);
                                     column_settings_save("", last_load_profile);
                                 }
@@ -1524,19 +1455,14 @@ async function run(settings, opd_system_settings){
                         }
                         //ツイート表示モードイベント
                         opd_column_tw_view_mode_opt.addEventListener("change", async function(){
-                            console.log("visible")
                             column_settings_save("", last_load_profile);
-                            //console.log(this.closest("div[opd_column_type]").querySelector("webview"))
                             let tw_view_mode_target_object = this.closest("div[opd_column_type]").querySelector("webview");
-                            //console.log(this.value)
                             if(el_content_filter_key == null){
                                 //tw_view_mode_target_object.contentWindow.document.querySelector("head").insertAdjacentHTML("beforeend", `<style opd_tw_view_mode_css></style>`);
                                 await tw_view_mode_target_object.insertCSS('div[data-testid="cellInnerDiv"]:has(div[aria-labelledby]){}').then((key)=>{
-                                    console.log(key)
                                     el_content_filter_key = key;
                                 })
                             }
-                            console.log(typeof el_content_filter_key)
                             if(el_content_filter_key != null){
                                 await tw_view_mode_target_object.removeInsertedCSS(el_content_filter_key)
                             }
@@ -1547,14 +1473,12 @@ async function run(settings, opd_system_settings){
                                 case "1":
                                     //tw_view_mode_target_object.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = `div[data-testid="cellInnerDiv"]:has(div[aria-labelledby]){visibility: hidden; height: 0;}`;
                                     tw_view_mode_target_object.insertCSS('div[data-testid="cellInnerDiv"]:has(div[aria-labelledby]){visibility: hidden; height: 0;}').then((key)=>{
-                                        console.log(key)
                                         el_content_filter_key = key;
                                     })
                                     break;
                                 case "2":
                                     //tw_view_mode_target_object.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = `div[data-testid="cellInnerDiv"]:not(:has(div[aria-labelledby])){visibility: hidden; height: 0;}`;
                                     tw_view_mode_target_object.insertCSS('div[data-testid="cellInnerDiv"]:not(:has(div[aria-labelledby])){visibility: hidden; height: 0;}').then((key)=>{
-                                        console.log(key)
                                         el_content_filter_key = key;
                                     })
                                     break;
@@ -1608,7 +1532,6 @@ async function run(settings, opd_system_settings){
             //document.querySelector("#main_rack_element").style.height = "50vh";
             document.querySelector("#first_rack_element").style.height = "50%";
             document.querySelector("#second_rack_element").style.height = "50%";
-            //console.log(default_element.second_empty_column)
             //const second_rack_empty_html = `<section draggable="false" id="column_%column_num%" class="dsp_column dsp_column_second_emptycolumn"><div opd_column_type="second_empty_column" style="height: calc(100% - 20px);min-width: 30rem;display: flex;align-items: center;justify-content: center;"><p>2段目<br>1段目のカラムが配置できます</p></div></section>`;
             const second_rack_default_html = default_element.second_empty_column.html.replaceAll("%column_num%", create_random_id()).replace("%column_banner_ch%", "").replace("%column_tw_view_mode%", "0");
             document.querySelector("#second_rack_element").insertAdjacentHTML("beforeend", second_rack_default_html);
@@ -1729,9 +1652,7 @@ async function run(settings, opd_system_settings){
         if(await opd_system.opd_custom_dialog('プロファイル作成', "現在の構成でプロファイルを作成します")){
             let profile = column_settings_save("profile_out");
             const save_object = {name:"user_profile", profile:profile.column_settings};
-            //console.log(profile)
             profile_store.push(save_object);
-            //console.log(profile_store)
             await opd_system.opd_set_data_store('opd_profile_store',JSON.stringify(profile_store)).then(function () {
                 let profile_list_btn_html = "";
                 //プロファイルリスト初期化
@@ -1747,16 +1668,13 @@ async function run(settings, opd_system_settings){
     document.getElementById("profile_delete").addEventListener("click", async function(){
         electron_opd_msg_box('prompt', '削除プロファイル入力', '削除するプロファイル番号を半角入力<br>※削除後、残ったプロファイル番号は0から再度割り振られます。', '0', '0', async function(input_value){
             //const delete_num = Number(prompt("削除するプロファイル番号を半角入力"));
-            console.log(input_value)
             if(last_load_profile != input_value){
                 if(await opd_system.opd_custom_dialog('プロファイル削除', `プロファイル${input_value}を削除しますか?\r\n`)){
                     let after_profile_num = null;
                     profile_store.splice(input_value, 1);
-                    //console.log(profile_store)
                     opd_system.opd_set_data_store('opd_profile_store', JSON.stringify(profile_store)).then(function () {
                         //
                         opd_system.opd_get_data_store('opd_settings').then(function(load_value){
-                            //console.log(last_load_profile)
                             if(last_load_profile<input_value){
                                 after_profile_num = last_load_profile;
                             }else{
@@ -1767,7 +1685,6 @@ async function run(settings, opd_system_settings){
                             }
                             last_load_profile = after_profile_num;
                             //
-                            console.log(after_profile_num)
                             let load_setting = JSON.parse(load_value.opd_settings);
                             load_setting.last_load_profile = after_profile_num;
                             opd_system.opd_set_data_store('opd_settings', JSON.stringify(load_setting)).then(function (){
@@ -1793,7 +1710,6 @@ async function run(settings, opd_system_settings){
         let column_object = null;
         if(mode == "second_column" || mode =="init"){
             column_object = session_webview_obj;
-            console.log(session_webview_obj)
         }else{
             column_object = document.getElementsByTagName("webview");
         }
@@ -1804,10 +1720,8 @@ async function run(settings, opd_system_settings){
         //let column_class = document.querySelectorAll(".dsp_column");
         let column_copy_source = null;
         for (let index = 0; index < column_object.length; index++) {
-            console.log(column_object[index].closest('section.dsp_column'))
             const section_obj = column_object[index].closest('section.dsp_column');
             section_obj.addEventListener("dragstart", function(ev){
-                //console.log(this)
                 column_copy_source = this;
                 ev.dataTransfer.setData('text/html', ev.target.id);
             });
@@ -1828,20 +1742,15 @@ async function run(settings, opd_system_settings){
                 //移動時初期表示設定
                 //bn_twview_mode(this.querySelector("webview"));
                 //exploreのURLセット
-                //console.log(column_class[index])
                 //移動セット
                 const dt_id = ev.dataTransfer.getData('text/html');
                 const dr_elem = document.getElementById(dt_id);
                 if(dr_elem != null){
                     if(dr_elem?.querySelector("div")?.getAttribute("opd_column_type") == 'explore'){
                         // && dr_elem.querySelector("div").querySelector("webview").src != `https://x.com${dr_elem.querySelector("div").getAttribute("opd_explore_path")}`
-                        //console.log(dr_elem.querySelector("div").getAttribute("opd_explore_path"))
-                        //console.log(dr_elem.querySelector("div").getAttribute("opd_pinned_path"))
                         if(dr_elem.querySelector("div").getAttribute("opd_pinned_path") != ""){
-                            //console.log("Pinned")
                             dr_elem.querySelector("div").querySelector("webview").src = `https://x.com${dr_elem.querySelector("div").getAttribute("opd_pinned_path")}`;
                         }else{
-                           //console.log("Exp_save")
                             dr_elem.querySelector("div").querySelector("webview").src = `https://x.com${dr_elem.querySelector("div").getAttribute("opd_explore_path")}`;
                         }
                     }
@@ -1861,7 +1770,6 @@ async function run(settings, opd_system_settings){
         let column_object = null;
         if(mode == "session_set" || mode == "add_column"){
             column_object = session_webview_obj;
-            console.log(session_webview_obj)
         }else{
             column_object = document.getElementsByTagName("webview");
         }
@@ -1942,12 +1850,10 @@ async function run(settings, opd_system_settings){
             }
             //横幅設定
             if(document.querySelectorAll("#opd_main_element div[opd_column_type]")[index].getAttribute("opd_column_width") != "null"){
-                //console.log(document.querySelectorAll("#opd_main_element div[opd_column_type]")[index].getAttribute("opd_column_width"))
                 column_width_value = document.querySelectorAll("#opd_main_element div[opd_column_type]")[index].getAttribute("opd_column_width");
             }
             //exploreの処理
             if(document.querySelectorAll("#opd_main_element div[opd_column_type]")[index].getAttribute("opd_column_type") == 'explore'){
-                //console.log(document.querySelectorAll("#opd_main_element div[opd_column_type]")[index].getAttribute("opd_explore_path"));
                 column_open_path = document.querySelectorAll("#opd_main_element div[opd_column_type]")[index].getAttribute("opd_explore_path");
                 //ピン止め
                 column_pinned_save_path = document.querySelectorAll("#opd_main_element div[opd_column_type]")[index].getAttribute("opd_pinned_path");
@@ -1965,7 +1871,6 @@ async function run(settings, opd_system_settings){
                     column_auto_reload = false;
                 }
                 const column_setting_time = Number(document.querySelectorAll("#opd_main_element div[opd_column_type]")[index].querySelector(".opd_a_reload_time_setting").value) * 1000;
-                //console.log(column_setting_time)
                 if(column_setting_time >= 1000){
                     
                     column_auto_reload_time = column_setting_time;
@@ -1978,16 +1883,10 @@ async function run(settings, opd_system_settings){
         if(mode == "profile_out"){
             return settings_array;
         }else{
-            //console.log(settings_array);
-            /*chrome.storage.local.set({'opd_settings': JSON.stringify(settings_array)}, function () {
-                console.log(settings_array);
-            });*/
             const save_object = {name:"user_profile", profile:settings_array.column_settings};
             //profile_store.push(save_object);
             Object.assign(profile_store[profile_num], save_object);
-            //console.log(profile_store);
             opd_system.opd_set_data_store('opd_profile_store', JSON.stringify(profile_store)).then(function () {
-                //console.log(settings_array);
             });
         }
     }
@@ -2005,7 +1904,6 @@ function settings_init(){
         version:opd_system.opd_version()
     };
     let profile = [{name:"default", profile: profile_store_default}];
-    //console.log(profile);
     opd_system.opd_set_data_store('opd_profile_store', JSON.stringify(profile));
     opd_system.opd_set_data_store('opd_settings', JSON.stringify(settings))
     /*if(prototype_version){
@@ -2025,12 +1923,10 @@ async function electron_opd_select_session(column_provider, func){
             func("default_session");
         }
     });
-    console.log(column_provider)
     switch(column_provider){
         case 'twitter':
             account_session['twitter'].forEach(sessions => {
                 const randomid = random_string();
-                console.log(randomid)
                 document.getElementById("opd_select_sessions").insertAdjacentHTML("beforeend", `<tr><th class="session_content" opd_session="sessions_${randomid}">${sessions.session_name}</th></tr>`);
                 document.querySelector(`.electron_opd_select_as_bg th[opd_session="sessions_${randomid}"]`).addEventListener("click", async function(){
                     if(await opd_system.opd_custom_dialog('セッション切り替え', `セッション「${sessions.session_name}」に切り替えますか？`)){

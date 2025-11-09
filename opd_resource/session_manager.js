@@ -1,6 +1,5 @@
 window.addEventListener("load", async function(){
     const get_session_data = await opd_system.opd_session_store_operation('get_store');
-    console.log(get_session_data);
     let delete_btn_num = 0;
     get_session_data.twitter.forEach((array_data) => {
         document.getElementById("twitter_session_list").insertAdjacentHTML("beforeend", `<tr><th scope="row">${array_data.session_name}</th><td><input id="twitter_session_${delete_btn_num}" class="twitter_session_delete" type="button" value="削除"</td></tr>`);

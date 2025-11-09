@@ -506,10 +506,8 @@ ipcMain.handle('start_text_review', function(e, data){
         return false;
       }
       const result = res.json();
-      console.log(result)
       return await result;
     }catch(error){
-      console.error("Fetch failed:", error);
       return false;
     }
   })();
