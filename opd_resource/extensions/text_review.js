@@ -1,8 +1,9 @@
 // 文章校正機能で使用
 class OpdExtTextReview {
     constructor() {
-        this.Init = async (column_webview, icons) => {
+        this.Init = async (column_webview, icon) => {
             //初期化
+            const review_icon = await icon;
             column_webview.insertCSS(`
                 /* Premium 勧誘要素非表示 */
                 div[aria-live="polite"][role="status"]:has(a[dir="ltr"]){
@@ -37,7 +38,7 @@ class OpdExtTextReview {
                 }
                 .opd_text_review_btn_icon{
                     display: block;
-                    /*mask: url(${opd_system.load_resource(icons.text_review)}) no-repeat center;*/
+                    mask: url(${review_icon}) no-repeat center;
                     width: 18px;
                     height: 18px;
                 }

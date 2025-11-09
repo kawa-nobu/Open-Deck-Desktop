@@ -212,7 +212,6 @@
             this.ReviewRquest = async(str)=>{
                 //校正を開始し、結果を得る関数
                 const review_result = opd_system.text_review(str);
-                console.log(review_result)
 
                 if(review_result){
                     return review_result;

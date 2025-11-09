@@ -7,6 +7,22 @@ contextBridge.exposeInMainWorld("opd_system",{
         //console.log(process)
         return `file:///${arg_resource_path}${resource_name}`;
     },
+    load_resource_to_b64(resource_name){
+        const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
+        //console.log(process)
+        const resource_b64 = (async ()=>{
+            console.log(`file:///${arg_resource_path}${resource_name}`)
+            const response = await fetch(`file:///${arg_resource_path}${resource_name}`);
+            const blob = await response.blob();
+            return await new Promise((resolve, reject) => {
+                const fr = new FileReader();
+                fr.onload = () => resolve(fr.result);
+                fr.onerror = reject;
+                fr.readAsDataURL(blob);
+            });
+        })();
+        return resource_b64;
+    },
     load_webview_preload_script(){
         const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_webview_preload_path')).split('=')[1];
         //console.log(process)

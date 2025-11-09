@@ -32,7 +32,8 @@ const ui_icon_define = {
     profile_delete:"icon/profile_delete.svg",
     change_session:"icon/select_session.svg",
     session_manager:"icon/session_namager.svg",
-    system_settings: "icon/settings.svg"
+    system_settings: "icon/settings.svg",
+    text_review:"icon/text_review.svg"
 }
 //UNIX時間分秒変換
 function unix_time_mmss(input){
@@ -1173,7 +1174,8 @@ async function run(settings, opd_system_settings){
                     const post_column_webview = opd_column_div.querySelector("webview");
                     //文章校正機能
                     const ext_text_review = new OpdExtTextReview();
-                    ext_text_review.Init(post_column_webview, ui_icon_define);
+                    const review_icon = opd_system.load_resource_to_b64(ui_icon_define.text_review);
+                    ext_text_review.Init(post_column_webview, review_icon);
                 }
             })
             //各カラム読み込み後の動作(init)
