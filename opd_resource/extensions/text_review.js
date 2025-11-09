@@ -101,7 +101,7 @@ class OpdExtTextReview {
                 }
             `);
             //GIF ボタンを消す
-            column_webview.insertCSS(`main button[data-testid="gifSearchButton"], button[data-testid="app-bar-close"]{display:none;}div[data-testid="twc-cc-mask"]{display:none;}`);
+            column_webview.insertCSS(`main button[data-testid="gifSearchButton"], div[role="group"] button[data-testid="app-bar-close"]{display:none;}div[data-testid="twc-cc-mask"]{display:none;}`);
             //ヘルパースクリプト追加
             column_webview.executeJavaScript(await opd_system.post_column_helper_script());
         }
