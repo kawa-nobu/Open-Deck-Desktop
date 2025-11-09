@@ -305,6 +305,43 @@ app.on("ready", ()=>{
     }
   });
 })
+app.on('session-created', (session) => {
+  debug_stdout(session);
+  const block_rules = [
+    {
+      referer: 'https://x.com/compose/post',
+      target: 'https://x.com/i/api/1.1/graphql/user_flow.json',
+    },
+    {
+      referer: 'https://x.com/compose/post',
+      target: 'https://x.com/i/api/2/badge_count/badge_count.json',
+    },
+    {
+      referer: 'https://x.com/compose/post',
+      target: 'https://x.com/i/api/1.1/graphql/error_log.json',
+    }
+  ];
+  //各セッション内でユーザーエージェントを一般的なブラウザに戻す
+  session.webRequest.onBeforeSendHeaders((details, callback) => {
+    details.requestHeaders['User-Agent'] =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+      'AppleWebKit/537.36 (KHTML, like Gecko) ' +
+      'Chrome/142.0.0.0 Safari/537.36';
+    callback({ requestHeaders: details.requestHeaders });
+  });
+  //ポストカラムでは通知取得やエラーログの収集をブロックする
+  session.webRequest.onBeforeRequest((details, callback) => {
+    const ref = details.referrer || '';
+    const url = details.url;
+
+    const is_blocked = block_rules.some((r) => ref.startsWith(r.referer) && url.includes(r.target));
+
+    if (is_blocked) {
+      return callback({ cancel: true });
+    }
+    callback({});
+  });
+});
 //セッションマネージャー関連処理
 ipcMain.handle('OPD_SessionManager_GetStore', (event, data) => {
   debug_stdout(data);
@@ -447,7 +484,36 @@ ipcMain.handle('OPD_Columun_HelperScripts', async function(e, data){
     case 'get_auto_reload':
       const read_auto_reload_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/auto_reload_helper.js`, {encoding:'utf-8'});
       return read_auto_reload_script;
+    case 'get_post_column_text_review':
+      const read_post_text_review_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/text_review_helper.js`, {encoding:'utf-8'});
+      return read_post_text_review_script;
   }
+})
+//テキスト校正
+ipcMain.handle('start_text_review', function(e, data){
+  debug_stdout(e.senderFrame)
+  const result = (async () => {
+    const api_url = "https://opd.kwdev-sys.com/api/opd/text_review/review";
+
+    try{
+      const res = await fetch(api_url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "Origin": "chrome-extension://gmkadaeibmhchpimnfplodelecmogdic"},
+        body: JSON.stringify({"text":data.text}),
+      });
+
+      if(!res.ok){
+        return false;
+      }
+      const result = res.json();
+      console.log(result)
+      return await result;
+    }catch(error){
+      console.error("Fetch failed:", error);
+      return false;
+    }
+  })();
+  return result;
 })
 //システム設定表示
 const system_settings_createWindow = () => {
