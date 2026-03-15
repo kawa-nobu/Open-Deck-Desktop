@@ -33,7 +33,10 @@ const ui_icon_define = {
     change_session:"icon/select_session.svg",
     session_manager:"icon/session_namager.svg",
     system_settings: "icon/settings.svg",
-    text_review:"icon/text_review.svg"
+    text_review:"icon/text_review.svg",
+    forward:"icon/forward.svg",
+    next:"icon/next.svg",
+    download:"icon/download.svg"
 }
 //UNIX時間分秒変換
 function unix_time_mmss(input){
@@ -161,6 +164,11 @@ async function run(settings, opd_system_settings){
         profile_list_btn_html += `<div class="dsp_btn_parent" title="プロファイルを切り替える" id="userProfile-${index}"><div class="dsp_btn_change_profile_btn">P${index}</div></div>`;//<div class="profile_list"><input type="button" id="userProfile-${index}" value="P${index}"></div>
     }
     profile_list_html = `<div class="profile_val_now" title="使用中のプロファイル">${last_load_profile}</div><div class="dsp_profile_list"><div id="profile_btn_list">${profile_list_btn_html}</div>`;
+    //画像表示パネル
+    const media_viewer = new OpdExtMediaViewer();
+    opd_system.opd_open_media_viewer_dialog(function(media_info, selected_index){
+        media_viewer.Preview(media_info, selected_index);
+    });
     //CSSタグ追加
     document.querySelector("head").insertAdjacentHTML("afterbegin", `<style second_column_css></style>
     <style opd_default_css>
@@ -587,6 +595,87 @@ async function run(settings, opd_system_settings){
         .dsp_column_settings_list {
             background: #474747
         }
+    }
+    /* メディアビューワー */
+    ::backdrop {
+        background: rgba(0, 0, 0, 0.9);
+    }
+    #opd_media_viewer:focus {
+        outline: none;
+    }
+    .opd_media_viewer_func_btn{
+        border: 0;
+        background: #00000000;
+        cursor: pointer;
+        outline: none;
+    }
+    .opd_media_viewer_func_btn.media_switch_btn{
+        width: 80px;
+        height: 80px;
+        margin: 10px;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .opd_media_viewer_func_btn_circle button{
+        border: 0;
+        background: #00000000;
+        cursor: pointer;
+        outline: none;
+        border-radius: 10px;
+    }
+    button[disabled].opd_media_viewer_func_btn{
+        visibility: hidden;
+    }
+    .opd_media_viewer_func_btn_icon_color{
+        filter: brightness(0) saturate(100%) invert(96%) sepia(6%) saturate(0%) hue-rotate(285deg) brightness(115%) contrast(100%);
+    }
+    .opd_media_viewer_func_btn:hover{
+        background: #2f2f2fa3;
+    }
+    .opd_media_viewer_func_btn_circle button:hover{
+        background: #2f2f2fa3;
+    }
+    .media_viewer_icon_close{
+        display: block;
+        background-image: url(${opd_system.load_resource(ui_icon_define.column_close)});
+        background-size: 20px;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 40px;
+        height: 40px;
+        padding: 5px;
+    }
+    .media_viewer_icon_forward{
+        display: block;
+        background-image: url(${opd_system.load_resource(ui_icon_define.forward)});
+        background-size: 20px;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 30px;
+        height: 30px;
+        padding: 5px;
+    }
+    .media_viewer_icon_next{
+        display: block;
+        background-image: url(${opd_system.load_resource(ui_icon_define.next)});
+        background-size: 20px;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 30px;
+        height: 30px;
+        padding: 5px;
+    }
+    .media_viewer_icon_download{
+        display: block;
+        background-image: url(${opd_system.load_resource(ui_icon_define.download)});
+        background-size: 20px;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 30px;
+        height: 30px;
+        padding: 5px;
     }
     </style>
     <style opd_electron_style>
@@ -1147,8 +1236,12 @@ async function run(settings, opd_system_settings){
                 if(mode != "session_set"){
                     const column_type = opd_column_div.getAttribute("opd_column_type");
                     if(column_type === "home" || column_type === "explore"){
+                        const target_column = opd_column_div.querySelector("webview");
                         column_content_reload = new OpdExtAutoReload();
-                        column_content_reload.Init(opd_column_div.querySelector("webview"));
+                        column_content_reload.Init(target_column);
+                        //メディアビューワー関連仕込み
+                        const column_media_viewer_blocker = new OpdMediaViewerBlocker();
+                        column_media_viewer_blocker.Init(target_column);
                     }
                 }
                 //設定パネルイベント

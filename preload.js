@@ -36,6 +36,12 @@ contextBridge.exposeInMainWorld("opd_system",{
         })
         return helper_script;
     },
+    media_viwer_blocker_script(){
+        const helper_script = ipcRenderer.invoke('OPD_Columun_HelperScripts', {message:"get_media_viewer_blocker"}).then((res)=>{
+            return res;
+        })
+        return helper_script;
+    },
     opd_version(){
         const opd_version = process.argv.find(arg => arg.startsWith('--opd_version')).split('=')[1];
         return opd_version;
@@ -105,6 +111,11 @@ contextBridge.exposeInMainWorld("opd_system",{
         })*/
        ipcRenderer.on('OPD_update_api_limit', (event, data) => {
       func(data)
+    })
+    }, 
+    opd_open_media_viewer_dialog(func){
+       ipcRenderer.on('OPD_open_media_viewer_dialog', (event, media_info, selected_index) => {
+      func(media_info, selected_index)
     })
     }, 
     async opd_custom_dialog(title, detail){

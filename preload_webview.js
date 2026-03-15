@@ -7,5 +7,9 @@ contextBridge.exposeInMainWorld("opd_system",{
     text_review(str){
         const result = ipcRenderer.invoke('start_text_review', {text:str});
         return result;
+    },
+    open_media_viewer(media_info, selected_index){
+        ipcRenderer.send('open_media_viewer', media_info, selected_index);
+        return true;
     }
 });

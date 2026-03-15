@@ -487,6 +487,9 @@ ipcMain.handle('OPD_Columun_HelperScripts', async function(e, data){
     case 'get_post_column_text_review':
       const read_post_text_review_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/text_review_helper.js`, {encoding:'utf-8'});
       return read_post_text_review_script;
+    case 'get_media_viewer_blocker':
+      const read_media_viewer_blocker_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/media_viewer_block_helper.js`, {encoding:'utf-8'});
+      return read_media_viewer_blocker_script;
   }
 })
 //テキスト校正
@@ -626,6 +629,11 @@ const about_opd_createWindow = () => {
     is_open_about_opd_window = false;
   })
 }
+//メディアビューワーオープン
+ipcMain.on('open_media_viewer', function(e, media_info, media_index){
+  opd_main_window.webContents.send('OPD_open_media_viewer_dialog', media_info, media_index);
+  return true;
+})
 ipcMain.on('open_about_opd', function(e, data){
   if(!is_open_about_opd_window){
     is_open_about_opd_window = true;
