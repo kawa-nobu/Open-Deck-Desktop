@@ -25,7 +25,6 @@ contextBridge.exposeInMainWorld("opd_system",{
         }
     },
     opd_rebuild_sevedata(store_name){
-        console.log("rebuild")
         switch(store_name){
             case 'system_settings':
                 const sys_settings_rebuild = ipcRenderer.invoke('OPD_StoreReset', {message:'system_settings'}).then((res)=>{
