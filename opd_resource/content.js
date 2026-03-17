@@ -1824,7 +1824,7 @@ async function run(settings, opd_system_settings){
             const section_obj = column_object[index].closest('section.dsp_column');
             section_obj.addEventListener("dragstart", function(ev){
                 column_copy_source = this;
-                ev.dataTransfer.setData('text/html', ev.target.id);
+                ev.dataTransfer.setData('text/plain', ev.target.id);
             });
             section_obj.addEventListener("dragover", function(ev){
                 ev.preventDefault();
@@ -1844,7 +1844,7 @@ async function run(settings, opd_system_settings){
                 //bn_twview_mode(this.querySelector("webview"));
                 //exploreのURLセット
                 //移動セット
-                const dt_id = ev.dataTransfer.getData('text/html');
+                const dt_id = ev.dataTransfer.getData('text/plain');
                 const dr_elem = document.getElementById(dt_id);
                 if(dr_elem != null){
                     if(dr_elem?.querySelector("div")?.getAttribute("opd_column_type") == 'explore'){
