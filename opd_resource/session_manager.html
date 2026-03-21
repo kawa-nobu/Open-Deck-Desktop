@@ -1,130 +1,158 @@
 <!DOCTYPE html>
+
 <head>
-    <meta charset="UTF-8" >
+    <meta charset="UTF-8">
     <title>Open-Deckアカウントセッションマネージャー</title>
     <script src="session_manager.js" charset="UTF-8"></script>
     <style>
-    html {
-        color-scheme: light dark;
-    }
-    .header {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 20px;
-    }
-    table {
-        border-collapse: collapse;
-        border: 2px solid rgb(180, 180, 180);
-        background: #ffffff;
-    }
-    th, td {
-        border: 1.5px solid rgb(210, 210, 210);
-        padding: 0px 10px;
-    }
-    .add_session_area {
-        width: 100%;
-    }
-    .add_session_area .functions {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-    }
-    .add_session_area .functions input {
-        flex: 1;
-        min-width: 0;
-    }
-    .session_list {
-        list-style: none;
-        padding: 0px 16px;
-        margin: 0 0 16px;
-    }
-    .session_list .session_item {
-        padding: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    }
-    .session_list_area {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 400px));
-        gap: 20px;
-        justify-content: center;
-        align-items: stretch;
-    }
-    .session_list_area p {
-        margin: 0px 0 4px;
-    }
-    .box {
-        border-radius: 10px;
-        background: #ffffff;
-        border: 1px solid #dbdbdb;
-        overflow: hidden;
-    }
-    .box_header {
-        padding: 20px;
-        background: #f6f6f6;
-        border-bottom: 1px solid #dbdbdb;
-    }
-    .box_header h2 {
-        margin: 0;
-    }
-    input[type="text"] {
-        background: #ffffff;
-        border: 1px solid #808080;
-        border-radius: 4px;
-        padding: 8px 10px;
-    }
-    button {
-        border: 1px solid #808080;
-        border-radius: 4px;
-        padding: 8px 12px;
-        background: #f6f6f6;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #e9e9e9;
-    }
+        html {
+            color-scheme: light dark;
+        }
 
-    @media (prefers-color-scheme: dark) {
-        body {
-            background: initial;
-            color: initial;
+        .header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
         }
+
         table {
-            border: 2px solid rgb(113, 113, 113);
-            background: transparent;
+            border-collapse: collapse;
+            border: 2px solid rgb(180, 180, 180);
+            background: #ffffff;
         }
-        th, td {
-            border: 1.5px solid rgb(135, 135, 135);
+
+        th,
+        td {
+            border: 1.5px solid rgb(210, 210, 210);
+            padding: 0px 10px;
         }
+
+        .add_session_area {
+            width: 100%;
+        }
+
+        .add_session_area .functions {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .add_session_area .functions input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .session_list {
+            list-style: none;
+            padding: 0px 16px;
+            margin: 0 0 16px;
+        }
+
         .session_list .session_item {
-            border-bottom: 1px solid #ffffff36;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         }
+
+        .session_list_area {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 400px));
+            gap: 20px;
+            justify-content: center;
+            align-items: stretch;
+        }
+
+        .session_list_area p {
+            margin: 0px 0 4px;
+        }
+
         .box {
-            background: #ffffff26;
-            border: none;
+            border-radius: 10px;
+            background: #ffffff;
+            border: 1px solid #dbdbdb;
+            overflow: hidden;
         }
+
         .box_header {
-            background: #ffffff12;
-            border-bottom: none;
+            padding: 20px;
+            background: #f6f6f6;
+            border-bottom: 1px solid #dbdbdb;
         }
+
+        .box_header h2 {
+            margin: 0;
+        }
+
         input[type="text"] {
-            background: initial;
-            color: initial;
-            border: 1px solid rgb(135, 135, 135);
+            background: #ffffff;
+            border: 1px solid #808080;
+            border-radius: 4px;
+            padding: 8px 10px;
         }
+
         button {
-            background: initial;
-            color: initial;
-            border: 1px solid rgb(135, 135, 135);
+            border: 1px solid #808080;
+            border-radius: 4px;
+            padding: 8px 12px;
+            background: #f6f6f6;
+            cursor: pointer;
         }
+
         button:hover {
-        background: #585858;
-    }
-    }
+            background: #e9e9e9;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: initial;
+                color: initial;
+            }
+
+            table {
+                border: 2px solid rgb(113, 113, 113);
+                background: transparent;
+            }
+
+            th,
+            td {
+                border: 1.5px solid rgb(135, 135, 135);
+            }
+
+            .session_list .session_item {
+                border-bottom: 1px solid #ffffff36;
+            }
+
+            .box {
+                background: #ffffff26;
+                border: none;
+            }
+
+            .box_header {
+                background: #ffffff12;
+                border-bottom: none;
+            }
+
+            input[type="text"] {
+                background: initial;
+                color: initial;
+                border: 1px solid rgb(135, 135, 135);
+            }
+
+            button {
+                background: initial;
+                color: initial;
+                border: 1px solid rgb(135, 135, 135);
+            }
+
+            button:hover {
+                background: #585858;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="header">
         <section class="area1">
@@ -140,12 +168,16 @@
         <section class="area2 box">
             <header class="box_header">
                 <h2>Twitter</h2>
-                
             </header>
-            
             <ul id="twitter_session_list" class="session_list">
                 <li class="session_item">
-                    <div class="add_session_area"><p>新規追加</p><div class="functions"><input id="add_twitter_session_name" type="text" placeholder="任意のセッション名を入力"><button id="add_twitter_session_button">追加</button></div></div>
+                    <div class="add_session_area">
+                        <p>新規追加</p>
+                        <div class="functions">
+                            <input id="add_twitter_session_name" type="text" placeholder="任意のセッション名を入力">
+                            <button id="add_twitter_session_button">追加</button>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </section>
@@ -155,7 +187,13 @@
             </header>
             <ul id="misskey_session_list" class="session_list">
                 <li class="session_item">
-                    <div class="add_session_area"><p>新規追加</p><div class="functions"><input id="add_misskey_session_name" type="text" placeholder="任意のセッション名を入力"><button id="add_misskey_session_button">追加</button></div></div>
+                    <div class="add_session_area">
+                        <p>新規追加</p>
+                        <div class="functions">
+                            <input id="add_misskey_session_name" type="text" placeholder="任意のセッション名を入力">
+                            <button id="add_misskey_session_button">追加</button>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </section>
@@ -165,10 +203,17 @@
             </header>
             <ul id="bluesky_session_list" class="session_list">
                 <li class="session_item">
-                    <div class="add_session_area"><p>新規追加</p><div class="functions"><input id="add_bluesky_session_name" type="text" placeholder="任意のセッション名を入力"><button id="add_bluesky_session_button">追加</button></div></div>
+                    <div class="add_session_area">
+                        <p>新規追加</p>
+                        <div class="functions">
+                            <input id="add_bluesky_session_name" type="text" placeholder="任意のセッション名を入力">
+                            <button id="add_bluesky_session_button">追加</button>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </section>
     </div>
 </body>
+
 </html>
