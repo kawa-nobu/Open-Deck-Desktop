@@ -10,6 +10,7 @@
         .header{
             display: flex;
             justify-content: center;
+            margin-bottom: 20px;
         }
         table{
             border-collapse: collapse;
@@ -19,12 +20,45 @@
             border: 1.5px solid rgb(135, 135, 135);
             padding: 0px 10px;
         }
-        .session_list_area{
-            display: flex;
-            justify-content: center;
+        .add_session_area {
+            width: 100%;
         }
-        .session_list{
-            margin: 20px;
+        .add_session_area .functions {
+            display: flex;
+            justify-content: space-between;
+        }
+        .session_list {
+            list-style: none;
+            padding: 0px 16px;
+            margin: 0 0 16px;
+        }
+        .session_list .session_item {
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ffffff36;
+        }
+        .session_list_area{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 400px));
+            gap: 20px;
+            justify-content: center;
+            align-items: stretch;
+        }
+        .session_list_area p {
+            margin: 0px 0 4px;
+        }
+        .box{
+            border-radius: 20px;
+            background: #ffffff26;
+            overflow: hidden;
+        }
+        .box_header {
+            padding: 20px;
+            background: #ffffff12;
+        }
+        .box_header h2 {
+            margin: 0;
         }
     </style>
 </head>
@@ -40,47 +74,37 @@
         </section>
     </div>
     <div class="session_list_area">
-        <section class="area2 session_list">
-            <h3>Twitterカラム セッション</h3>
-            <table>
-                <thead>
-                  <tr>
-                    <th scope="col">セッション名</th>
-                    <th scope="col">操作</th>
-                  </tr>
-                </thead>
-                <tbody id="twitter_session_list">
-                </tbody>
-              </table>
-              <div class="add_session_area">新規追加<br><input id="add_twitter_session_name" type="text" placeholder="任意のセッション名を入力"><input id="add_twitter_session_button" type="button" value="追加する"></div>
+        <section class="area2 box">
+            <header class="box_header">
+                <h2>Twitter</h2>
+                
+            </header>
+            
+            <ul id="twitter_session_list" class="session_list">
+                <li class="session_item">
+                    <div class="add_session_area"><p>新規追加</p><div class="functions"><input id="add_twitter_session_name" type="text" placeholder="任意のセッション名を入力"><button id="add_twitter_session_button">追加</button></div></div>
+                </li>
+            </ul>
         </section>
-        <section class="area3 session_list">
-            <h3>Misskeyカラム セッション</h3>
-            <table>
-                <thead>
-                  <tr>
-                    <th scope="col">セッション名</th>
-                    <th scope="col">操作</th>
-                  </tr>
-                </thead>
-                <tbody id="misskey_session_list">
-                </tbody>
-              </table>
-              <div class="add_session_area">新規追加<br><input id="add_misskey_session_name" type="text" placeholder="任意のセッション名を入力"><input id="add_misskey_session_button" type="button" value="追加する"></div>
+        <section class="area3 box">
+            <header class="box_header">
+                <h2>Misskey</h2>
+            </header>
+            <ul id="misskey_session_list" class="session_list">
+                <li class="session_item">
+                    <div class="add_session_area"><p>新規追加</p><div class="functions"><input id="add_misskey_session_name" type="text" placeholder="任意のセッション名を入力"><button id="add_misskey_session_button">追加</button></div></div>
+                </li>
+            </ul>
         </section>
-        <section class="area3 session_list">
-            <h3>BlueSkyカラム セッション</h3>
-            <table>
-                <thead>
-                  <tr>
-                    <th scope="col">セッション名</th>
-                    <th scope="col">操作</th>
-                  </tr>
-                </thead>
-                <tbody id="bluesky_session_list">
-                </tbody>
-              </table>
-              <div class="add_session_area">新規追加<br><input id="add_bluesky_session_name" type="text" placeholder="任意のセッション名を入力"><input id="add_bluesky_session_button" type="button" value="追加する"></div>
+        <section class="area3 box">
+            <header class="box_header">
+                <h2>BlueSky</h2>
+            </header>
+            <ul id="bluesky_session_list" class="session_list">
+                <li class="session_item">
+                    <div class="add_session_area"><p>新規追加</p><div class="functions"><input id="add_bluesky_session_name" type="text" placeholder="任意のセッション名を入力"><button id="add_bluesky_session_button">追加</button></div></div>
+                </li>
+            </ul>
         </section>
     </div>
 </body>

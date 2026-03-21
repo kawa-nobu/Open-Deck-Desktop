@@ -563,7 +563,7 @@ ipcMain.on('OPD_AppExit', function(e, data){
 //セッションマネージャー表示
 const session_manager_opd_createWindow = () => {
   session_manager_window = new BrowserWindow({
-    width: 880,
+    width: 900,
     height: 550,
     resizable: true,
     minimizable: false,
