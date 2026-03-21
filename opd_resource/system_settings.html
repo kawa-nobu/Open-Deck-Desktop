@@ -1,33 +1,203 @@
 <!DOCTYPE html>
+
 <head>
-    <meta charset="UTF-8" >
+    <meta charset="UTF-8">
     <title>Open-Deckシステム設定</title>
     <script src="system_settings.js" charset="UTF-8"></script>
     <style>
-        html{
+        html {
             color-scheme: light dark;
         }
-        .header{
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+        }
+
+        .header {
             display: flex;
             justify-content: center;
+            margin-bottom: 20px;
         }
-        table{
-            border-collapse: collapse;
-            border: 2px solid rgb(113, 113, 113);
+
+        .header .area1 {
+            width: 100%;
+            max-width: 960px;
         }
-        th,td {
-            border: 1.5px solid rgb(135, 135, 135);
-            padding: 0px 10px;
+
+        .header h2 {
+            margin: 0;
         }
-        .settings_area{
-            justify-content: center;
-            flex-direction: column;
+
+        .settings_area {
+            display: grid;
+            gap: 20px;
+            max-width: 960px;
+            margin: 0 auto;
         }
-        .setting_list{
-            margin: 20px;
+
+        .setting_list {
+            margin: 0;
+        }
+
+        .setting_list>header {
+            margin-bottom: 8px;
+        }
+
+        .setting_list>header h3 {
+            margin: 0;
+        }
+
+        .box {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            border-radius: 10px;
+            background: #ffffff;
+            border: 1px solid #dbdbdb;
+            overflow: hidden;
+        }
+
+        .session_list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .session_list .session_item {
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .session_list .session_item:last-child {
+            border-bottom: none;
+        }
+
+        .session_list .session_item>div,
+        .session_list .session_item>p {
+            margin: 0;
+            width: 100%;
+        }
+
+        .session_list .session_item>div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .session_list label {
+            flex: 1;
+            min-width: 0;
+        }
+
+        input[type="text"],
+        select {
+            background: #ffffff;
+            color: #111111;
+            border: 1px solid #808080;
+            border-radius: 4px;
+            padding: 8px 10px;
+            min-height: 36px;
+            font: inherit;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            flex-shrink: 0;
+            accent-color: #4f8cff;
+        }
+
+        button,
+        input[type="button"] {
+            border: 1px solid #808080;
+            border-radius: 4px;
+            padding: 8px 12px;
+            background: #f6f6f6;
+            color: inherit;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        button:hover,
+        input[type="button"]:hover {
+            background: #e9e9e9;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px;
+            }
+
+            .session_list .session_item>div {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            input[type="text"],
+            select,
+            button,
+            input[type="button"] {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: initial;
+                color: initial;
+            }
+
+            .session_list .session_item {
+                border-bottom: 1px solid #ffffff36;
+            }
+
+            .box {
+                background: #ffffff26;
+                border: none;
+            }
+
+            input[type="text"],
+            select {
+                background: #1f1f1f;
+                color: #f3f3f3;
+                border: 1px solid rgb(135, 135, 135);
+            }
+
+            select option {
+                background: #1f1f1f;
+                color: #f3f3f3;
+            }
+
+            input[type="checkbox"] {
+                accent-color: #85b6ff;
+            }
+
+            button,
+            input[type="button"] {
+                background: #2b2b2b;
+                color: #f3f3f3;
+                border: 1px solid rgb(135, 135, 135);
+            }
+
+            button:hover,
+            input[type="button"]:hover {
+                background: #585858;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <section class="area1">
@@ -36,28 +206,86 @@
     </div>
     <div class="settings_area">
         <section class="setting_list">
-            <h3>外観</h3>
-            <div><label for="opd_color_mode">カラーモード</label><select id="opd_color_mode"><option value="0">システム</option><option value="1">ライト</option><option value="2">ダーク</option></select></div>
-            <h3>スクロールバー(Misskeyカラム以外有効)</h3>
-            <div><label for="opd_scrollbar_type">スクロールバーを細くする(次回起動時有効)</label><input id="opd_scrollbar_type" type="checkbox"></div>
+            <header>
+                <h3>外観</h3>
+            </header>
+            <ul class="box session_list">
+                <li class="session_item">
+                    <div>
+                        <label for="opd_color_mode">カラーモード</label>
+                        <select id="opd_color_mode">
+                            <option value="0">システム</option>
+                            <option value="1">ライト</option>
+                            <option value="2">ダーク</option>
+                        </select>
+                    </div>
+                </li>
+                <li class="session_item">
+                    <div>
+                        <label for="opd_scrollbar_type">スクロールバーを細くする(次回起動時 / Misskeyカラム以外有効)</label>
+                        <input id="opd_scrollbar_type" type="checkbox">
+                    </div>
+                </li>
+            </ul>
         </section>
         <section class="setting_list">
-            <h3>ウィンドウ設定</h3>
-            <div><label for="opd_hide_promotion">プロモーションを非表示にする(Twitterのみ有効/次回起動時有効)</label><input id="opd_hide_promotion" type="checkbox"></div>
+            <header>
+                <h3>ウィンドウ設定</h3>
+            </header>
+            <ul class="box session_list">
+                <li class="session_item">
+                    <div>
+                        <label for="opd_close_btn_mini">閉じるボタンを最小化にする</label>
+                        <input id="opd_close_btn_mini" type="checkbox">
+                    </div>
+                </li>
+            </ul>
         </section>
         <section class="setting_list">
-            <h3>コンテンツ制御</h3>
-            <div><label for="opd_close_btn_mini">閉じるボタンを最小化にする</label><input id="opd_close_btn_mini" type="checkbox"></div>
+            <header>
+                <h3>コンテンツ制御</h3>
+            </header>
+            <ul class="box session_list">
+                <li class="session_item">
+                    <div><label for="opd_hide_promotion">プロモーションを非表示にする(Twitterのみ有効 / 次回起動時有効)</label>
+                        <input id="opd_hide_promotion" type="checkbox">
+                    </div>
+                </li>
+            </ul>
         </section>
         <section class="setting_list">
-            <h3>開発者向け機能</h3>
-            <p><input id="opd_rebuild_sys_settings" type="button" value="システム設定を初期化"></p>
-            <p><input id="opd_rebuild_profile" type="button" value="プロファイルを初期化"></p>
+            <header>
+                <h3>開発者向け機能</h3>
+            </header>
+            <ul class="box session_list">
+                <li class="session_item">
+                    <div>
+                        <span>システム設定を初期化</span>
+                        <button id="opd_rebuild_sys_settings">初期化</button>
+                    </div>
+                </li>
+                <li class="session_item">
+                    <div>
+                        <span>プロファイルを初期化</span>
+                        <button id="opd_rebuild_profile">初期化</button>
+                    </div>
+                </li>
+            </ul>
         </section>
         <section class="setting_list">
-            <h3>システム操作</h3>
-            <div><input id="opd_app_exit" type="button" value="Open-Deckを終了"></div>
+            <header>
+                <h3>システム操作</h3>
+            </header>
+            <ul class="box session_list">
+                <li class="session_item">
+                    <div>
+                        <span>Open-Deckを終了</span>
+                        <button id="opd_app_exit">終了</button>
+                    </div>
+                </li>
+            </ul>
         </section>
     </div>
 </body>
+
 </html>
