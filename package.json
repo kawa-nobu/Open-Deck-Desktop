@@ -6,7 +6,10 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --opd-debug"
+    "dev": "electron . --opd-debug",
+    "licenses:scan": "license-checker-rseidelsohn --json --out build_license/licenses.json",
+    "licenses:html": "node build_scripts/create_licenses_html.js",
+    "licenses": "npm run licenses:scan && npm run licenses:html"
   },
   "author": "kawa-nobu",
   "license": "MIT",
@@ -28,6 +31,12 @@
       "preload_system_settings.js",
       "preload_webview.js"
     ],
+    "extraResources": [
+      {
+        "from": "build_license/OPD_Use_Software_License.html",
+        "to": "OPD_Use_Software_License.html"
+      }
+    ],
     "mac": {
       "target": "dmg",
       "icon": "./OpenDeck_App_Logo.png"
@@ -40,5 +49,8 @@
       "target": "zip",
       "icon": "./OpenDeck_App_Logo.png"
     }
+  },
+  "dependencies": {
+    "license-checker-rseidelsohn": "^4.4.2"
   }
 }
