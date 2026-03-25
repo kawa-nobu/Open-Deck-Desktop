@@ -38,23 +38,48 @@ function is_first_running(check_flag){
     });
   }
 }
+//ストアデータアップデートチェック
+function system_settings_update_checker(sys_settings_filepath, default_setting){
+  const settings_json = fs.readFileSync(sys_settings_filepath, {encoding:'utf-8'});
+  const settings = JSON.parse(settings_json);
+
+  const default_setting_keys = Object.keys(default_setting);
+  let updated_flag = false;
+
+  //新規設定項目があれば新しく作成する
+  for (let index = 0; index < default_setting_keys.length; index++) {
+    if(!(default_setting_keys[index] in settings)){
+      settings[default_setting_keys[index]] = default_setting[default_setting_keys[index]]
+      updated_flag = true;
+    }
+  }
+
+  //新規で設定項目があったら書き込む
+  if(updated_flag){
+    fs.writeFileSync(sys_settings_filepath, JSON.stringify(settings))
+  }
+}
+
 //ストアデータ作成関数
 function system_settings_store_init(mode){
   //ElectronシステムUI設定
   const sys_settings_filepath = `${app.getPath('userData').replaceAll("\\", "/")}/opd_system_settings.json`;
   debug_stdout(fs.existsSync(sys_settings_filepath))
+  //システム設定初期値(設定項目が増えていくごとにここを増やす)
+  //カラーモード0:システム, 1:ライト, 2:ダーク
+  const settings = {
+    last_window_width:1920,
+    last_window_height:1080,
+    color_mode:0,
+    scrollbar_thin_mode:true,
+    contents_hide_promotion:false,
+    window_close_to_minimize:false
+  };
+
   if(fs.existsSync(sys_settings_filepath) && mode == 'nomal'){
+    system_settings_update_checker(sys_settings_filepath, settings)
     return sys_settings_filepath;
   }else{
-    //カラーモード0:システム, 1:ライト, 2:ダーク
-    const settings = {
-      last_window_width:1920,
-      last_window_height:1080,
-      color_mode:0,
-      scrollbar_thin_mode:true,
-      contents_hide_promotion:false,
-      window_close_to_minimize:false
-    };
     fs.writeFileSync(sys_settings_filepath, JSON.stringify(settings));
     debug_stdout("create system settings store ok");
     return sys_settings_filepath;
