@@ -22,8 +22,8 @@
   "build": {
     "appId": "work.kwdev.opdapp.release",
     "files": [
-      "opd_resource/*",
-      "opd_resource/icon/*",
+      "lib/**/*",
+      "opd_resource/**/*",
       "package.json",
       "main.js",
       "about_opd_preload.js",
