@@ -297,8 +297,9 @@ app.whenReady().then(async () => {
     });
 
     //アップデートをチェックする
-    if(system_settings.check_update){
-      await check_update()
+    const settings = load_system_settings();
+    if(settings.check_update){
+      await check_update();
     }
   })
   
