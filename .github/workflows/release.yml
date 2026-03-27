@@ -21,8 +21,8 @@ jobs:
             os_name: windows
           - runner: ubuntu-latest
             os_name: linux
-          - runner: macos-latest
-            os_name: macos
+          #- runner: macos-latest
+          #  os_name: macos
 
     steps:
       - name: Checkout Code
