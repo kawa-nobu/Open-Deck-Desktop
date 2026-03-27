@@ -21,6 +21,8 @@ let access_limit = {
 };
 //設定データ存在フラグ
 const sys_settings_check_flag = fs.existsSync(`${app.getPath('userData').replaceAll("\\", "/")}/opd_system_settings.json`);
+//アプリケーション UA 設定
+app.userAgentFallback = app.userAgentFallback.replace(/\sOpen-Deck\/[^\s]+/g, '').replace(/\sElectron\/[^\s]+/g, '').replace(/\s{2,}/g, ' ').trim();
 //初回起動検出関数&ドキュメント閲覧
 function is_first_running(check_flag){
   debug_stdout("first_running")
