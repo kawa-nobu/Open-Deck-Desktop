@@ -5,7 +5,6 @@ window.open = function(url, target, windowFeatures) {
 };
 document.addEventListener('click', (event) => {
     const target = event.target.closest('a');
-    console.log(target)
     const misskey_img_link_filter = target?.querySelector("canvas[title]") == undefined;
     if(target && target.href && misskey_img_link_filter){
         event.preventDefault();

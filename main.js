@@ -1,7 +1,8 @@
-const {app, BrowserWindow, Notification, session, nativeTheme, dialog, shell, ipcMain} = require('electron');
+const {app, BrowserWindow, session, nativeTheme, dialog, shell, ipcMain} = require('electron');
+const {get_update} = require('./lib/app_update');
 const path = require("path");
 const fs = require("fs");
-const { profile } = require('console');
+
 let settings_app_exit_flag = false;
 //デバッグモード引数フラグ
 const debug_mode_flag = process.argv.some(arg => arg.startsWith('--opd-debug'));
@@ -21,6 +22,8 @@ let access_limit = {
 };
 //設定データ存在フラグ
 const sys_settings_check_flag = fs.existsSync(`${app.getPath('userData').replaceAll("\\", "/")}/opd_system_settings.json`);
+//アプリケーション UA 設定
+app.userAgentFallback = app.userAgentFallback.replace(/\sOpen-Deck\/[^\s]+/g, '').replace(/\sElectron\/[^\s]+/g, '').replace(/\s{2,}/g, ' ').trim();
 //初回起動検出関数&ドキュメント閲覧
 function is_first_running(check_flag){
   debug_stdout("first_running")
@@ -38,23 +41,66 @@ function is_first_running(check_flag){
     });
   }
 }
+//アプリケーションアップデートチェック
+async function check_update(){
+  const app_update = await get_update();
+  if(app_update.is_update){
+    dialog.showMessageBox({
+      type: 'info',
+      message: "新バージョンが公開されています！",
+      detail:`最新バージョンにすることで新機能やバグ修正が適用可能です！\r\n最新バージョン: ${app_update.latest_version}`,
+      buttons: ["GitHubから入手する", "無視する"],
+      defaultId: 0
+    }).then((res)=>{
+      if(res.response == 0){
+        shell.openExternal(`https://github.com/kawa-nobu/Open-Deck-Desktop/releases/`);
+      }
+    });
+  }
+}
+//ストアデータアップデートチェック
+function system_settings_update_checker(sys_settings_filepath, default_setting){
+  const settings_json = fs.readFileSync(sys_settings_filepath, {encoding:'utf-8'});
+  const settings = JSON.parse(settings_json);
+
+  const default_setting_keys = Object.keys(default_setting);
+  let updated_flag = false;
+
+  //新規設定項目があれば新しく作成する
+  for (let index = 0; index < default_setting_keys.length; index++) {
+    if(!(default_setting_keys[index] in settings)){
+      settings[default_setting_keys[index]] = default_setting[default_setting_keys[index]]
+      updated_flag = true;
+    }
+  }
+
+  //新規で設定項目があったら書き込む
+  if(updated_flag){
+    fs.writeFileSync(sys_settings_filepath, JSON.stringify(settings))
+  }
+}
+
 //ストアデータ作成関数
 function system_settings_store_init(mode){
   //ElectronシステムUI設定
   const sys_settings_filepath = `${app.getPath('userData').replaceAll("\\", "/")}/opd_system_settings.json`;
   debug_stdout(fs.existsSync(sys_settings_filepath))
+  //システム設定初期値(設定項目が増えていくごとにここを増やす)
+  //カラーモード0:システム, 1:ライト, 2:ダーク
+  const settings = {
+    last_window_width:1920,
+    last_window_height:1080,
+    color_mode:0,
+    scrollbar_thin_mode:true,
+    contents_hide_promotion:false,
+    window_close_to_minimize:false,
+    check_update:true,
+  };
+
   if(fs.existsSync(sys_settings_filepath) && mode == 'nomal'){
+    system_settings_update_checker(sys_settings_filepath, settings)
     return sys_settings_filepath;
   }else{
-    //カラーモード0:システム, 1:ライト, 2:ダーク
-    const settings = {
-      last_window_width:1920,
-      last_window_height:1080,
-      color_mode:0,
-      scrollbar_thin_mode:true,
-      contents_hide_promotion:false,
-      window_close_to_minimize:false
-    };
     fs.writeFileSync(sys_settings_filepath, JSON.stringify(settings));
     debug_stdout("create system settings store ok");
     return sys_settings_filepath;
@@ -139,6 +185,9 @@ function system_settings_save(data){
         case 'scrollbar_thin_mode':
           settings_obj.scrollbar_thin_mode = settings.value;
           break;
+        case 'check_update':
+          settings_obj.check_update = settings.value;
+          break;
         default:
           set_status = 1;
       }
@@ -174,6 +223,7 @@ let is_open_session_manager_window = false;
 let is_open_system_settings_window = false;
 let is_open_about_opd_window = false;
 //メインウィンドウ作成
+const system_settings = load_system_settings();
 const createWindow = () => {
   opd_main_window = new BrowserWindow({
     width: 1920,
@@ -195,14 +245,14 @@ const createWindow = () => {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      webviewTag:true/*,
-      backgroundThrottling: false*/
+      webviewTag:true,
+      backgroundThrottling: false,
     }
   })
   //初期起動案内
   is_first_running(sys_settings_check_flag);
-  const system_settings = load_system_settings();
   debug_stdout(system_settings)
+  //カラーモード
   switch(system_settings.color_mode){
     case 0:
       nativeTheme.themeSource = 'system';
@@ -234,7 +284,7 @@ const createWindow = () => {
       }
     });
   }
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     createWindow()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length == 0){
@@ -244,6 +294,11 @@ app.whenReady().then(() => {
     app.on('window-all-closed', () => {
       app.quit();
     });
+
+    //アップデートをチェックする
+    if(system_settings.check_update){
+      await check_update()
+    }
   })
   
 app.on("ready", ()=>{
@@ -303,14 +358,37 @@ app.on("ready", ()=>{
             opd_main_window.webContents.send('OPD_update_api_limit', access_limit);
       });
     }
-    //通知処理
-    if(details.url == 'https://x.com/i/api/2/badge_count/badge_count.json?supports_ntab_urt=1'){
-      /*debug_stdout(details.url)
-      opd_main_window.webContents.send('OPD_notification_sound', `sound/notification_sound.wav`);
-      new Notification({title:"通知取得", body: "通知です", silent: true}).show();*/
-    }
   });
 })
+app.on('session-created', (session) => {
+  debug_stdout(session);
+  const block_rules = [
+    {
+      referer: 'https://x.com/compose/post',
+      target: 'https://x.com/i/api/1.1/graphql/user_flow.json',
+    },
+    {
+      referer: 'https://x.com/compose/post',
+      target: 'https://x.com/i/api/2/badge_count/badge_count.json',
+    },
+    {
+      referer: 'https://x.com/compose/post',
+      target: 'https://x.com/i/api/1.1/graphql/error_log.json',
+    }
+  ];
+  //ポストカラムでは通知取得やエラーログの収集をブロックする
+  session.webRequest.onBeforeRequest((details, callback) => {
+    const ref = details.referrer || '';
+    const url = details.url;
+
+    const is_blocked = block_rules.some((r) => ref.startsWith(r.referer) && url.includes(r.target));
+
+    if (is_blocked) {
+      return callback({ cancel: true });
+    }
+    callback({});
+  });
+});
 //セッションマネージャー関連処理
 ipcMain.handle('OPD_SessionManager_GetStore', (event, data) => {
   debug_stdout(data);
@@ -446,6 +524,62 @@ ipcMain.handle('OPD_StoreReset', function(e, data){
 }
   return true;
 })
+//ヘルパースクリプト
+ipcMain.handle('OPD_Columun_HelperScripts', async function(e, data){
+  debug_stdout(data)
+  switch(data.message){
+    case 'get_auto_reload':
+      const read_auto_reload_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/auto_reload_helper.js`, {encoding:'utf-8'});
+      return read_auto_reload_script;
+    case 'get_post_column_text_review':
+      const read_post_text_review_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/text_review_helper.js`, {encoding:'utf-8'});
+      return read_post_text_review_script;
+    case 'get_media_viewer_blocker':
+      const read_media_viewer_blocker_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/media_viewer_block_helper.js`, {encoding:'utf-8'});
+      return read_media_viewer_blocker_script;
+    case 'get_posts_controller':
+      const read_posts_controller_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/posts_ctrl_helper.js`, {encoding:'utf-8'});
+      return read_posts_controller_script;
+  }
+})
+//表示ポスト設定返却
+ipcMain.handle('get_column_posts_settings', function(e, data){
+  debug_stdout(e.senderFrame)
+  const system_setting = load_system_settings();
+  let settings = null;
+  switch (data.type) {
+    case "twitter":
+      settings = {
+        is_hide_promotion: system_setting.contents_hide_promotion,
+      }
+      break;
+  }
+  return settings;
+});
+//テキスト校正
+ipcMain.handle('start_text_review', function(e, data){
+  debug_stdout(e.senderFrame)
+  const result = (async () => {
+    const api_url = "https://opd.kwdev-sys.com/api/opd/text_review/review";
+
+    try{
+      const res = await fetch(api_url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "Origin": "chrome-extension://gmkadaeibmhchpimnfplodelecmogdic"},
+        body: JSON.stringify({"text":data.text}),
+      });
+
+      if(!res.ok){
+        return false;
+      }
+      const result = res.json();
+      return await result;
+    }catch(error){
+      return false;
+    }
+  })();
+  return result;
+})
 //システム設定表示
 const system_settings_createWindow = () => {
   system_settings_window = new BrowserWindow({
@@ -493,7 +627,7 @@ ipcMain.on('OPD_AppExit', function(e, data){
 //セッションマネージャー表示
 const session_manager_opd_createWindow = () => {
   session_manager_window = new BrowserWindow({
-    width: 880,
+    width: 900,
     height: 550,
     resizable: true,
     minimizable: false,
@@ -559,6 +693,11 @@ const about_opd_createWindow = () => {
     is_open_about_opd_window = false;
   })
 }
+//メディアビューワーオープン
+ipcMain.on('open_media_viewer', function(e, media_info, media_index){
+  opd_main_window.webContents.send('OPD_open_media_viewer_dialog', media_info, media_index);
+  return true;
+})
 ipcMain.on('open_about_opd', function(e, data){
   if(!is_open_about_opd_window){
     is_open_about_opd_window = true;

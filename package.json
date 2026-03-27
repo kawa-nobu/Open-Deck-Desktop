@@ -1,26 +1,29 @@
 {
   "name": "open_deck_desktop",
-  "productName": "Open-Deck-Prototype",
-  "version": "0.0.2",
-  "description": "Open-Deck-Prototype",
+  "productName": "Open-Deck",
+  "version": "1.0.0",
+  "description": "Open-Deck",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --opd-debug"
+    "dev": "electron . --opd-debug",
+    "licenses:scan": "license-checker-rseidelsohn --json --out build_license/licenses.json",
+    "licenses:html": "node build_scripts/create_licenses_html.js",
+    "licenses": "npm run licenses:scan && npm run licenses:html",
+    "build": "npm run licenses && electron-builder"
   },
   "author": "kawa-nobu",
   "license": "MIT",
   "repository": "github:kawa-nobu/Open-Deck-Desktop",
   "devDependencies": {
-    "electron": "^39.1.1",
-    "electron-builder": "^26.0.12"
+    "electron": "41.0.3",
+    "electron-builder": "26.8.2"
   },
   "build": {
-    "appId": "work.kwdev.opdapp.prototype",
+    "appId": "work.kwdev.opdapp.release",
     "files": [
-      "opd_resource/*",
-      "opd_resource/icon/*",
-      "opd_resource/sound/*",
+      "lib/**/*",
+      "opd_resource/**/*",
       "package.json",
       "main.js",
       "about_opd_preload.js",
@@ -29,17 +32,59 @@
       "preload_system_settings.js",
       "preload_webview.js"
     ],
-    "mac": {
-      "target": "dmg",
-      "icon": "./OpenDeck_App_Logo.png"
-    },
+    "extraFiles": [
+      {
+        "from": "build_license/OPD_Use_Software_License.html",
+        "to": "OPD_Use_Software_License.html"
+      },
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.OpenDeckDesktop.txt"
+      }
+    ],
     "win": {
-      "target": "zip",
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "artifactName": "Open-Deck-${version}-${os}-${arch}.${ext}",
       "icon": "./OpenDeck_App_Logo.png"
     },
     "linux": {
-      "target": "zip",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64",
+            "armv7l"
+          ]
+        }
+      ],
+      "artifactName": "Open-Deck-${version}-${platform}-${arch}.${ext}",
+      "icon": "./OpenDeck_App_Logo.png",
+      "category": "Network"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "Open-Deck-${version}-${platform}-${arch}.${ext}",
       "icon": "./OpenDeck_App_Logo.png"
     }
+  },
+  "dependencies": {
+    "license-checker-rseidelsohn": "4.4.2"
   }
 }

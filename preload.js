@@ -4,13 +4,49 @@ const {contextBridge, ipcRenderer} = require('electron');
 contextBridge.exposeInMainWorld("opd_system",{
     load_resource(resource_name){
         const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
-        //console.log(process)
         return `file:///${arg_resource_path}${resource_name}`;
+    },
+    load_resource_to_b64(resource_name){
+        const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
+        const resource_b64 = (async ()=>{
+            const response = await fetch(`file:///${arg_resource_path}${resource_name}`);
+            const blob = await response.blob();
+            return await new Promise((resolve, reject) => {
+                const fr = new FileReader();
+                fr.onload = () => resolve(fr.result);
+                fr.onerror = reject;
+                fr.readAsDataURL(blob);
+            });
+        })();
+        return resource_b64;
     },
     load_webview_preload_script(){
         const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_webview_preload_path')).split('=')[1];
-        //console.log(process)
         return `file:///${arg_resource_path}`;
+    },
+    auto_reload_helper_script(){
+        const helper_script = ipcRenderer.invoke('OPD_Columun_HelperScripts', {message:"get_auto_reload"}).then((res)=>{
+            return res;
+        })
+        return helper_script;
+    },
+    post_column_helper_script(){
+        const helper_script = ipcRenderer.invoke('OPD_Columun_HelperScripts', {message:"get_post_column_text_review"}).then((res)=>{
+            return res;
+        })
+        return helper_script;
+    },
+    media_viwer_blocker_script(){
+        const helper_script = ipcRenderer.invoke('OPD_Columun_HelperScripts', {message:"get_media_viewer_blocker"}).then((res)=>{
+            return res;
+        })
+        return helper_script;
+    },
+    posts_ctrl_script(){
+        const helper_script = ipcRenderer.invoke('OPD_Columun_HelperScripts', {message:"get_posts_controller"}).then((res)=>{
+            return res;
+        })
+        return helper_script;
     },
     opd_version(){
         const opd_version = process.argv.find(arg => arg.startsWith('--opd_version')).split('=')[1];
@@ -83,12 +119,11 @@ contextBridge.exposeInMainWorld("opd_system",{
       func(data)
     })
     }, 
-    opd_notification_sound_play(func){
-        const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
-        ipcRenderer.on('OPD_notification_sound', (event, data) => {
-            func(`file:///${arg_resource_path}${data}`)
-        })
-    },
+    opd_open_media_viewer_dialog(func){
+       ipcRenderer.on('OPD_open_media_viewer_dialog', (event, media_info, selected_index) => {
+      func(media_info, selected_index)
+    })
+    }, 
     async opd_custom_dialog(title, detail){
         const res = await ipcRenderer.invoke('open_custom_dialog', {title:title, detail:detail});
         return res;
