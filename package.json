@@ -9,7 +9,8 @@
     "dev": "electron . --opd-debug",
     "licenses:scan": "license-checker-rseidelsohn --json --out build_license/licenses.json",
     "licenses:html": "node build_scripts/create_licenses_html.js",
-    "licenses": "npm run licenses:scan && npm run licenses:html"
+    "licenses": "npm run licenses:scan && npm run licenses:html",
+    "build": "npm run licenses && electron-builder"
   },
   "author": "kawa-nobu",
   "license": "MIT",
@@ -37,16 +38,45 @@
         "to": "OPD_Use_Software_License.html"
       }
     ],
-    "mac": {
-      "target": "dmg",
-      "icon": "./OpenDeck_App_Logo.png"
-    },
     "win": {
-      "target": "zip",
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "artifactName": "Open-Deck-${version}-${os}-${arch}.${ext}",
       "icon": "./OpenDeck_App_Logo.png"
     },
     "linux": {
-      "target": "zip",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64",
+            "armv7l"
+          ]
+        }
+      ],
+      "artifactName": "Open-Deck-${version}-${platform}-${arch}.${ext}",
+      "icon": "./OpenDeck_App_Logo.png",
+      "category": "Network"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "Open-Deck-${version}-${platform}-${arch}.${ext}",
       "icon": "./OpenDeck_App_Logo.png"
     }
   },
