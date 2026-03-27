@@ -1092,10 +1092,6 @@ async function run(settings, opd_system_settings){
                 if(opd_system_settings.scrollbar_thin_mode && column_object[index].closest("div[opd_column_type]").getAttribute("opd_provider") != "misskey"){
                     column_object[index].insertCSS(`*{scrollbar-width: thin;}`);
                 }
-                //プロモーション非表示
-                if(opd_system_settings.contents_hide_promotion && column_object[index].closest("div[opd_column_type]").getAttribute("opd_provider") == "twitter"){
-                    column_object[index].insertCSS(`div[data-testid="cellInnerDiv"]:has(svg[aria-hidden="true"] + div[dir="ltr"]){display: none;}`);
-                }
                 //Blueskyレイアウトずれ防止
                 if(column_object[index].closest("div[opd_column_type]").getAttribute("opd_provider") == "bluesky"){
                     column_object[index].insertCSS(`html{scrollbar-gutter: initial !important;}`);
@@ -1256,10 +1252,15 @@ async function run(settings, opd_system_settings){
                 //自動更新関連仕込み
                 if(mode != "session_set"){
                     const column_type = opd_column_div.getAttribute("opd_column_type");
+                    const target_column = opd_column_div.querySelector("webview");
+                    column_content_reload = new OpdExtAutoReload();
+                    column_content_reload.Init(target_column);
+                    if(column_type === "home" || column_type === "explore" || column_type === "notification"){
+                        //ポストコントローラー関係仕込み
+                        const posts_controller = new OpdPostsController();
+                        posts_controller.Init(target_column);
+                    }
                     if(column_type === "home" || column_type === "explore"){
-                        const target_column = opd_column_div.querySelector("webview");
-                        column_content_reload = new OpdExtAutoReload();
-                        column_content_reload.Init(target_column);
                         //メディアビューワー関連仕込み
                         const column_media_viewer_blocker = new OpdMediaViewerBlocker();
                         column_media_viewer_blocker.Init(target_column);

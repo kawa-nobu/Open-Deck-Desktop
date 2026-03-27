@@ -515,8 +515,25 @@ ipcMain.handle('OPD_Columun_HelperScripts', async function(e, data){
     case 'get_media_viewer_blocker':
       const read_media_viewer_blocker_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/media_viewer_block_helper.js`, {encoding:'utf-8'});
       return read_media_viewer_blocker_script;
+    case 'get_posts_controller':
+      const read_posts_controller_script = fs.readFileSync(`${app.getAppPath().replaceAll("\\", "/")}/opd_resource/extensions/posts_ctrl_helper.js`, {encoding:'utf-8'});
+      return read_posts_controller_script;
   }
 })
+//表示ポスト設定返却
+ipcMain.handle('get_column_posts_settings', function(e, data){
+  debug_stdout(e.senderFrame)
+  const system_setting = load_system_settings();
+  let settings = null;
+  switch (data.type) {
+    case "twitter":
+      settings = {
+        is_hide_promotion: system_setting.contents_hide_promotion,
+      }
+      break;
+  }
+  return settings;
+});
 //テキスト校正
 ipcMain.handle('start_text_review', function(e, data){
   debug_stdout(e.senderFrame)
