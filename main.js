@@ -222,8 +222,8 @@ const createWindow = () => {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      webviewTag:true/*,
-      backgroundThrottling: false*/
+      webviewTag:true,
+      backgroundThrottling: false,
     }
   })
   //初期起動案内
