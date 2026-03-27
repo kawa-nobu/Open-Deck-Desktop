@@ -294,7 +294,7 @@ app.whenReady().then(async () => {
     app.on('window-all-closed', () => {
       app.quit();
     });
-    
+
     //アップデートをチェックする
     if(system_settings.check_update){
       await check_update()
@@ -376,14 +376,6 @@ app.on('session-created', (session) => {
       target: 'https://x.com/i/api/1.1/graphql/error_log.json',
     }
   ];
-  //各セッション内でユーザーエージェントを一般的なブラウザに戻す
-  session.webRequest.onBeforeSendHeaders((details, callback) => {
-    details.requestHeaders['User-Agent'] =
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
-      'AppleWebKit/537.36 (KHTML, like Gecko) ' +
-      'Chrome/142.0.0.0 Safari/537.36';
-    callback({ requestHeaders: details.requestHeaders });
-  });
   //ポストカラムでは通知取得やエラーログの収集をブロックする
   session.webRequest.onBeforeRequest((details, callback) => {
     const ref = details.referrer || '';
