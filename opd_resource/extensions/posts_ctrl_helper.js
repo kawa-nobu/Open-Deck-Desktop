@@ -1,12 +1,12 @@
 /* ポストのメタデータを取り出して表示制御などを行う
-Powered by CSLT (opd_tweet_ctrl.js)
-https://github.com/kawa-nobu/Clean-Spam-Link-Tweet/blob/Release/opd_tweet_ctrl.js
+Powered by CSLT (cslt_tweet_ctrl.js)
+https://github.com/kawa-nobu/Clean-Spam-Link-Tweet/blob/Release/cslt_tweet_ctrl.js
 
 TODO:CSLT が OpenDeck に統合されるようになったら、CSLT への自動切り替えを実装する
 */
 (async () => {
     const OPD_SETTINGS = await opd_system.get_column_posts_settings("twitter");
-    console.log(OPD_SETTINGS)
+
     function get_tw_userdata(input_element, mode) {
         const input_pr_array = Object.getOwnPropertyNames(input_element);
         const props_pr_name = input_pr_array.find((input) => input.includes('__reactProps$'));
@@ -246,21 +246,9 @@ TODO:CSLT が OpenDeck に統合されるようになったら、CSLT への自�
                                 "tw_card_obj": reply_twitter_card_obj
                             };
                             //console.log(tweetinfo_attr_reply)
-                            const target_root_elem_reply = tweet_elem[tweet_index].closest('[data-testid="cellInnerDiv"]');
+                            //const target_root_elem_reply = tweet_elem[tweet_index].closest('[data-testid="cellInnerDiv"]');
                             //target_root_elem_reply.setAttribute("opd_tweet_info", JSON.stringify(tweetinfo_attr_reply));
                             opd_tweet_info = tweetinfo_attr_reply;
-                            //フォロー済フラグ付加
-                            if (tweet_info_reply.user.following) {
-                                target_root_elem_reply.setAttribute("opd_tweet_info_following_flag", "true");
-                            }
-                            //自分のツイートフラグ付加
-                            if (login_userid() == tweet_info_reply.user.screen_name) {
-                                target_root_elem_reply.setAttribute("opd_tweet_info_mytweet_flag", "true");
-                            }
-                            //Blue認証付きフラグ
-                            if (tweet_info_reply.user.is_blue_verified) {
-                                target_root_elem_reply.setAttribute("opd_tweet_info_isblue_flag", "true");
-                            }
                         }
                         break;
                     case 'followers':
@@ -327,8 +315,8 @@ TODO:CSLT が OpenDeck に統合されるようになったら、CSLT への自�
                                 const notification_user_obj = {
                                     user_data_array: notification_user_data_array
                                 }
-                                const target_root_elem_notification = tweet_elem[tweet_index].closest('[data-testid="cellInnerDiv"]');
-                                target_root_elem_notification.setAttribute("opd_notifications_page_element", "");
+                                //const target_root_elem_notification = tweet_elem[tweet_index].closest('[data-testid="cellInnerDiv"]');
+                                //target_root_elem_notification.setAttribute("opd_notifications_page_element", "");
                                 //target_root_elem_notification.setAttribute("opd_tweet_info", JSON.stringify(notification_user_obj));//opd_notification_users_info
                                 opd_user_info = notification_user_obj;
                             }
@@ -515,21 +503,9 @@ TODO:CSLT が OpenDeck に統合されるようになったら、CSLT への自�
                                 "tw_card_unified_obj": other_twitter_card_unified_obj,
                                 "attached_urls": other_out_urls,
                             };
-                            const target_root_elem_other = tweet_elem[tweet_index].closest('[data-testid="cellInnerDiv"]');
+                            //const target_root_elem_other = tweet_elem[tweet_index].closest('[data-testid="cellInnerDiv"]');
                             //target_root_elem_other.setAttribute("opd_tweet_info", JSON.stringify(tweetinfo_attr_other));
                             opd_tweet_info = tweetinfo_attr_other;
-                            //フォロー済フラグ付加
-                            if (tweet_info_other?.user.following) {
-                                target_root_elem_other.setAttribute("opd_tweet_info_following_flag", "true");
-                            }
-                            //自分のツイートフラグ付加
-                            if (login_userid() == tweet_info_other.user.screen_name) {
-                                target_root_elem_other.setAttribute("opd_tweet_info_mytweet_flag", "true");
-                            }
-                            //Blue認証付きフラグ
-                            if (tweet_info_other.user.is_blue_verified) {
-                                target_root_elem_other.setAttribute("opd_tweet_info_isblue_flag", "true");
-                            }
                         }
                         break;
                     case 'communities':
@@ -645,21 +621,9 @@ TODO:CSLT が OpenDeck に統合されるようになったら、CSLT への自�
                                 "tw_card_unified_obj": communities_twitter_card_unified_obj,
                                 "attached_urls": communities_out_urls,
                             };
-                            const target_root_elem_communities = tweet_elem[tweet_index].closest('[data-testid="cellInnerDiv"]');
+                            //const target_root_elem_communities = tweet_elem[tweet_index].closest('[data-testid="cellInnerDiv"]');
                             //target_root_elem_communities.setAttribute("opd_tweet_info", JSON.stringify(tweetinfo_attr_communities));
                             opd_tweet_info = tweetinfo_attr_communities;
-                            //フォロー済フラグ付加
-                            if (tweet_info_communities?.user.following) {
-                                target_root_elem_communities.setAttribute("opd_tweet_info_following_flag", "true");
-                            }
-                            //自分のツイートフラグ付加
-                            if (login_userid() == tweet_info_communities?.user.screen_name) {
-                                target_root_elem_communities.setAttribute("opd_tweet_info_mytweet_flag", "true");
-                            }
-                            //Blue認証付きフラグ
-                            if (tweet_info_communities?.user.is_blue_verified) {
-                                target_root_elem_communities.setAttribute("opd_tweet_info_isblue_flag", "true");
-                            }
                         }
                         break;
                     case 'settings_block_mute':
