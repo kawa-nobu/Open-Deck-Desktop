@@ -223,7 +223,6 @@ let is_open_session_manager_window = false;
 let is_open_system_settings_window = false;
 let is_open_about_opd_window = false;
 //メインウィンドウ作成
-const system_settings = load_system_settings();
 const createWindow = () => {
   opd_main_window = new BrowserWindow({
     width: 1920,
@@ -249,6 +248,8 @@ const createWindow = () => {
       backgroundThrottling: false,
     }
   })
+  //システム設定読み出し
+  const system_settings = load_system_settings();
   //初期起動案内
   is_first_running(sys_settings_check_flag);
   debug_stdout(system_settings)
@@ -296,8 +297,9 @@ app.whenReady().then(async () => {
     });
 
     //アップデートをチェックする
-    if(system_settings.check_update){
-      await check_update()
+    const settings = load_system_settings();
+    if(settings.check_update){
+      await check_update();
     }
   })
   
