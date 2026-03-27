@@ -1,7 +1,8 @@
 const {app, BrowserWindow, Notification, session, nativeTheme, dialog, shell, ipcMain} = require('electron');
+const {get_update} = require('./lib/app_update');
 const path = require("path");
 const fs = require("fs");
-const { profile } = require('console');
+
 let settings_app_exit_flag = false;
 //デバッグモード引数フラグ
 const debug_mode_flag = process.argv.some(arg => arg.startsWith('--opd-debug'));
@@ -36,6 +37,23 @@ function is_first_running(check_flag){
     }).then((res)=>{
       if(res.response == 0){
         shell.openExternal(`https://www.youtube.com/watch?v=nQyuR3_-CqM`);
+      }
+    });
+  }
+}
+//アプリケーションアップデートチェック
+async function check_update(){
+  const app_update = await get_update();
+  if(app_update.is_update){
+    dialog.showMessageBox({
+      type: 'info',
+      message: "新バージョンが公開されています！",
+      detail:`最新バージョンにすることで新機能やバグ修正が適用可能です！\r\n最新バージョン: ${app_update.latest_version}`,
+      buttons: ["GitHubから入手する", "無視する"],
+      defaultId: 0
+    }).then((res)=>{
+      if(res.response == 0){
+        shell.openExternal(`https://github.com/kawa-nobu/Open-Deck-Desktop/releases/`);
       }
     });
   }
@@ -261,7 +279,7 @@ const createWindow = () => {
       }
     });
   }
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
     createWindow()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length == 0){
@@ -271,6 +289,8 @@ app.whenReady().then(() => {
     app.on('window-all-closed', () => {
       app.quit();
     });
+    //アップデートをチェックする
+    await check_update()
   })
   
 app.on("ready", ()=>{
