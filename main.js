@@ -93,7 +93,8 @@ function system_settings_store_init(mode){
     color_mode:0,
     scrollbar_thin_mode:true,
     contents_hide_promotion:false,
-    window_close_to_minimize:false
+    window_close_to_minimize:false,
+    check_update:true,
   };
 
   if(fs.existsSync(sys_settings_filepath) && mode == 'nomal'){
@@ -184,6 +185,9 @@ function system_settings_save(data){
         case 'scrollbar_thin_mode':
           settings_obj.scrollbar_thin_mode = settings.value;
           break;
+        case 'check_update':
+          settings_obj.check_update = settings.value;
+          break;
         default:
           set_status = 1;
       }
@@ -219,6 +223,7 @@ let is_open_session_manager_window = false;
 let is_open_system_settings_window = false;
 let is_open_about_opd_window = false;
 //メインウィンドウ作成
+const system_settings = load_system_settings();
 const createWindow = () => {
   opd_main_window = new BrowserWindow({
     width: 1920,
@@ -246,8 +251,8 @@ const createWindow = () => {
   })
   //初期起動案内
   is_first_running(sys_settings_check_flag);
-  const system_settings = load_system_settings();
   debug_stdout(system_settings)
+  //カラーモード
   switch(system_settings.color_mode){
     case 0:
       nativeTheme.themeSource = 'system';
@@ -289,8 +294,11 @@ app.whenReady().then(async () => {
     app.on('window-all-closed', () => {
       app.quit();
     });
+    
     //アップデートをチェックする
-    await check_update()
+    if(system_settings.check_update){
+      await check_update()
+    }
   })
   
 app.on("ready", ()=>{
