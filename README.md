@@ -3,6 +3,10 @@ Open-Deck Desktop は、[Open-Deck](https://github.com/kawa-nobu/Open-Deck) を�
 ブラウザ拡張機能版 Open-Deck をデスクトップ環境で利用できるようにしています。  
 拡張機能版とは違い、ブラウザ側の制約を受けにくいため、他SNSサポートや単一アプリケーションとして動作できるためより利便性が上がっております。
 
+## スクリーンショット
+<img height="800" alt="OPDDRelease" src="https://github.com/user-attachments/assets/0869ce59-006b-46b7-9001-27c37f5c9730" />
+
+
 ## 主な機能
 以下のように、拡張機能版 Open-Deck にて実装されている機能に加え、その他便利な独自機能が実装されています。
 
