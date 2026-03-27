@@ -32,10 +32,14 @@
       "preload_system_settings.js",
       "preload_webview.js"
     ],
-    "extraResources": [
+    "extraFiles": [
       {
         "from": "build_license/OPD_Use_Software_License.html",
         "to": "OPD_Use_Software_License.html"
+      },
+      {
+        "from": "LICENSE",
+        "to": "LICENSE.OpenDeckDesktop.txt"
       }
     ],
     "win": {
