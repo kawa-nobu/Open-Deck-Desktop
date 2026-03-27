@@ -1,4 +1,4 @@
-const {app, BrowserWindow, Notification, session, nativeTheme, dialog, shell, ipcMain} = require('electron');
+const {app, BrowserWindow, session, nativeTheme, dialog, shell, ipcMain} = require('electron');
 const {get_update} = require('./lib/app_update');
 const path = require("path");
 const fs = require("fs");
