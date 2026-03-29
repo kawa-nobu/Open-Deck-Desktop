@@ -677,7 +677,7 @@ const system_settings_createWindow = () => {
     webPreferences: {
       preload: path.join(app.getAppPath(), './preload_system_settings.js'),
       additionalArguments: [
-        `--opd_resource_path=${app.getAppPath().replaceAll("\\", "/")}/opd_resource/`,
+        `--opd_resource_path=${path.join(app.getAppPath(), 'opd_resource')}`,
         `--opd_settings_store_path=${system_settings_store_init('nomal')}`
       ],
       nodeIntegration: false,
@@ -721,7 +721,7 @@ const session_manager_opd_createWindow = () => {
     webPreferences: {
       preload: path.join(app.getAppPath(), './preload_session_manager.js'),
       additionalArguments: [
-        `--opd_resource_path=${app.getAppPath().replaceAll("\\", "/")}/opd_resource/`,
+        `--opd_resource_path=${path.join(app.getAppPath(), 'opd_resource')}`,
         `--opd_session_store_path=${session_store_init('nomal')}`
       ],
       nodeIntegration: false,
@@ -759,7 +759,7 @@ const about_opd_createWindow = () => {
     webPreferences: {
       preload: path.join(app.getAppPath(), './about_opd_preload.js'),
       additionalArguments: [
-        `--opd_resource_path=${app.getAppPath().replaceAll("\\", "/")}/opd_resource/`,
+        `--opd_resource_path=${path.join(app.getAppPath(), 'opd_resource')}`,
         `--opd_settings_store_path=${settings_store_init('nomal')}`,
         `--opd_profile_store_path=${profile_store_init('nomal')}`,
         `--opd_version=${app.getVersion()}`
