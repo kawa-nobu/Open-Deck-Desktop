@@ -1,6 +1,8 @@
-const {app, BrowserWindow, session, nativeTheme, dialog, shell, ipcMain} = require('electron');
+const {app, BrowserWindow, session, protocol, net, nativeTheme, dialog, shell, ipcMain} = require('electron');
 const {get_update} = require('./lib/app_update');
+const { pathToFileURL } = require('url');
 const path = require("path");
+const test = require("url")
 const fs = require("fs");
 
 let settings_app_exit_flag = false;
@@ -233,8 +235,8 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(app.getAppPath(), './preload.js'),
       additionalArguments: [
-        `--opd_resource_path=${app.getAppPath().replaceAll("\\", "/")}/opd_resource/`,
-        `--opd_webview_preload_path=${app.getAppPath().replaceAll("\\", "/")}/preload_webview.js`,
+        `--opd_resource_path=${path.join(app.getAppPath(), 'opd_resource')}`,
+        `--opd_webview_preload_path=${path.join(app.getAppPath(), 'preload_webview.js')}`,
         `--opd_system_settings_path=${system_settings_store_init('nomal')}`,
         `--opd_settings_store_path=${settings_store_init('nomal')}`,
         `--opd_profile_store_path=${profile_store_init('nomal')}`,
@@ -285,7 +287,88 @@ const createWindow = () => {
       }
     });
   }
-app.whenReady().then(async () => {
+  //アセット関連のプロトコルを登録
+  protocol.registerSchemesAsPrivileged([
+    {
+      scheme: 'opd',
+      privileges: {
+        standard: true,
+        secure: true,
+        supportFetchAPI: true
+      }
+    }
+  ]);
+  function isPathInside(baseDir, targetPath) {
+    //baseDir から見た相対パスを取得し、配下にあるかを判定する
+    const relativePath = path.relative(baseDir, targetPath);
+    return Boolean(
+      relativePath &&
+      !relativePath.startsWith('..') &&
+      !path.isAbsolute(relativePath)
+    );
+  }
+  app.whenReady().then(async () => {
+    //登録したプロトコルに対してアクセスされた際の動作
+    protocol.handle('opd', (request) => {
+      const { host, pathname } = new URL(request.url);
+
+      //opd://resources/ だけを公開する
+      if (host !== 'resources') {
+        return new Response('Not Found', { status: 404 });
+      }
+
+      if (pathname === '/') {
+        return new Response('Not Found', { status: 404 });
+      }
+
+      // opd_resource をルートとして扱う
+      const baseDir = path.join(app.getAppPath(), 'opd_resource');
+      //pathname がフルパス扱いにならないように、先頭の / を除去してから resolve 
+      const candidatePath = path.resolve(baseDir, pathname.replace(/^\/+/, ''));
+
+      //パス文字列ベースで、baseDir 配下に収まっているか確認する
+      if (!isPathInside(baseDir, candidatePath)) {
+        return new Response('Bad Request', {
+          status: 400,
+          headers: { 'content-type': 'text/plain; charset=utf-8' },
+        });
+      }
+
+      let finalPath = candidatePath;
+
+      //念のため、realpath ベースでも確認する
+      try {
+        const realBaseDir = fs.realpathSync(baseDir);
+        const realCandidatePath = fs.realpathSync(candidatePath);
+
+        //realpath で解決した後も baseDir 配下にあることを確認する
+        if (!isPathInside(realBaseDir, realCandidatePath)) {
+          return new Response('Bad Request', {
+            status: 400,
+            headers: { 'content-type': 'text/plain; charset=utf-8' },
+          });
+        }
+
+        finalPath = realCandidatePath;
+      } catch {
+        //realpath を解決できない場合は 404 を返す
+        return new Response('Not Found', { status: 404 });
+      }
+
+      try {
+        //最終的なパスが通常のファイルかどうかを確認
+        const stat = fs.statSync(finalPath);
+        if (!stat.isFile()) {
+          return new Response('Not Found', { status: 404 });
+        }
+      } catch {
+        return new Response('Not Found', { status: 404 });
+      }
+
+      //ファイルを返す
+      return net.fetch(pathToFileURL(finalPath).toString());
+    });
+    //ウィンドウを作成する
     createWindow()
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length == 0){
