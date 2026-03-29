@@ -1,7 +1,7 @@
 {
   "name": "open_deck_desktop",
   "productName": "Open-Deck",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Open-Deck",
   "main": "main.js",
   "scripts": {
@@ -16,7 +16,7 @@
   "license": "MIT",
   "repository": "github:kawa-nobu/Open-Deck-Desktop",
   "devDependencies": {
-    "electron": "41.0.3",
+    "electron": "41.0.4",
     "electron-builder": "26.8.2"
   },
   "build": {

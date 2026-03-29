@@ -3,8 +3,7 @@ const {contextBridge, ipcRenderer} = require('electron');
 //const fs = require('fs');
 contextBridge.exposeInMainWorld("opd_system",{
     load_resource(resource_name){
-        const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
-        return `file:///${arg_resource_path}${resource_name}`;
+        return `opd://resources/${resource_name.replace(/^\/+/, '')}`;
     },
     opd_version(){
         const opd_version = process.argv.find(arg => arg.startsWith('--opd_version')).split('=')[1];

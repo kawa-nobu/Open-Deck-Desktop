@@ -3,13 +3,11 @@ const {contextBridge, ipcRenderer} = require('electron');
 //const fs = require('fs');
 contextBridge.exposeInMainWorld("opd_system",{
     load_resource(resource_name){
-        const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
-        return `file:///${arg_resource_path}${resource_name}`;
+        return `opd://resources/${resource_name.replace(/^\/+/, '')}`;
     },
     load_resource_to_b64(resource_name){
-        const arg_resource_path = process.argv.find(arg => arg.startsWith('--opd_resource_path')).split('=')[1];
         const resource_b64 = (async ()=>{
-            const response = await fetch(`file:///${arg_resource_path}${resource_name}`);
+            const response = await fetch(`opd://resources/${resource_name.replace(/^\/+/, '')}`);
             const blob = await response.blob();
             return await new Promise((resolve, reject) => {
                 const fr = new FileReader();
