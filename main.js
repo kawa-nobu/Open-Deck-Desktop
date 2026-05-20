@@ -33,7 +33,7 @@ function is_first_running(check_flag){
     dialog.showMessageBox({
       type: 'info',
       message: "ようこそOpen-Deckへ！",
-      detail:`使い方の映像や公式マニュアル（ドキュメント)を視聴・確認しますか？(はじめての方は視聴を推奨)\r\nツールバーのOpen-Deckアイコンをクリックし、「Help」下から再度ドキュメントの確認ができます`,
+      detail:`使い方の映像や公式マニュアル(ドキュメント)を視聴・確認しますか？(はじめての方は視聴を推奨)\r\nツールバーのOpen-Deckアイコンをクリックし、「Help」下から再度ドキュメントの確認ができます`,
       buttons: ["今すぐ映像を見る", "今すぐマニュアルを見る", "OK"],
       defaultId: 0
     }).then((res)=>{
