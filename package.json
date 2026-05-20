@@ -16,7 +16,7 @@
   "license": "MIT",
   "repository": "github:kawa-nobu/Open-Deck-Desktop",
   "devDependencies": {
-    "electron": "41.0.4",
+    "electron": "42.1.0",
     "electron-builder": "26.8.2"
   },
   "build": {
