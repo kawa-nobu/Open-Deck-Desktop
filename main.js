@@ -368,8 +368,10 @@ const createWindow = () => {
       //ファイルを返す
       return net.fetch(pathToFileURL(finalPath).toString());
     });
+    
     //ウィンドウを作成する
     createWindow()
+
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length == 0){
         createWindow();
@@ -447,6 +449,22 @@ app.on("ready", ()=>{
 })
 app.on('session-created', (session) => {
   debug_stdout(session);
+
+  //不要なパーミッションを無効化してメモリを削減したい
+  const denied_permissions = [
+    'media', 'camera', 'microphone', 'display-capture',
+    'geolocation', 'midi', 'midiSysex',
+    'hid', 'serial', 'usb', 'bluetooth',
+    'idle-detection', 'background-sync', 'window-management',
+  ];
+  session.setPermissionRequestHandler((webcontents, permission, callback) => {
+    if (denied_permissions.includes(permission)) {
+      debug_stdout(`Permission denied (session created)-> ${permission}`);
+      return callback(false);
+    }
+    callback(true);
+  });
+
   const block_rules = [
     {
       referer: 'https://x.com/compose/post',
