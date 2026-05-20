@@ -32,13 +32,16 @@ function is_first_running(check_flag){
   if(!check_flag){
     dialog.showMessageBox({
       type: 'info',
-      message: "ようこそOpen-Deck試作版へ！",
-      detail:`使い方の映像を視聴しますか？(はじめての方は視聴を推奨)\r\nツールバーのOpen-Deckアイコンをクリックし、「Help」下のYouTubeのリンクから再度視聴できます`,
-      buttons: ["今すぐ映像を見る", "OK"],
+      message: "ようこそOpen-Deckへ！",
+      detail:`使い方の映像や公式マニュアル（ドキュメント)を視聴・確認しますか？(はじめての方は視聴を推奨)\r\nツールバーのOpen-Deckアイコンをクリックし、「Help」下から再度ドキュメントの確認ができます`,
+      buttons: ["今すぐ映像を見る", "今すぐマニュアルを見る", "OK"],
       defaultId: 0
     }).then((res)=>{
       if(res.response == 0){
         shell.openExternal(`https://www.youtube.com/watch?v=nQyuR3_-CqM`);
+      }
+      if(res.response == 1){
+        shell.openExternal(`https://kawa-nobu.github.io/Open-Deck-Wiki/`);
       }
     });
   }
@@ -238,7 +241,11 @@ let is_open_system_settings_window = false;
 let is_open_about_opd_window = false;
 //メインウィンドウ作成
 const createWindow = () => {
-  //システム設定読み出し
+  const sys_settings_path = system_settings_store_init('nomal');
+  const settings_path = settings_store_init('nomal');
+  const profile_path = profile_store_init('nomal');
+  const session_path = session_store_init('nomal');
+
   const system_settings = load_system_settings();
 
   opd_main_window = new BrowserWindow({
@@ -253,10 +260,10 @@ const createWindow = () => {
       additionalArguments: [
         `--opd_resource_path=${path.join(app.getAppPath(), 'opd_resource')}`,
         `--opd_webview_preload_path=${path.join(app.getAppPath(), 'preload_webview.js')}`,
-        `--opd_system_settings_path=${system_settings_store_init('nomal')}`,
-        `--opd_settings_store_path=${settings_store_init('nomal')}`,
-        `--opd_profile_store_path=${profile_store_init('nomal')}`,
-        `--opd_session_store_path=${session_store_init('nomal')}`,
+        `--opd_system_settings_path=${sys_settings_path}`,
+        `--opd_settings_store_path=${settings_path}`,
+        `--opd_profile_store_path=${profile_path}`,
+        `--opd_session_store_path=${session_path}`,
         `--opd_version=${app.getVersion()}`
       ],
       nodeIntegration: false,
