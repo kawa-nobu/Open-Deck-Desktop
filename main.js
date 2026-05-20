@@ -277,19 +277,24 @@ const createWindow = () => {
   // 位置情報がディスプレイ範囲内なら座標も復元対象にする
   if (system_settings.last_window_x !== null && system_settings.last_window_y !== null) {
     const displays = screen.getAllDisplays();
-    const is_in_display = displays.some(display => {
-      const { x, y, width, height } = display.bounds;
-      return (
-        system_settings.last_window_x >= x &&
-        system_settings.last_window_x < x + width &&
-        system_settings.last_window_y >= y &&
-        system_settings.last_window_y < y + height
-      );
-    });
 
-    if (is_in_display) {
-      window_target_x = system_settings.last_window_x;
-      window_target_y = system_settings.last_window_y;
+    if (displays.length === 0) {
+      debug_stdout('no displays detected!');
+    }else{
+      const is_in_display = displays.some(display => {
+        const { x, y, width, height } = display.bounds;
+        return (
+          system_settings.last_window_x >= x &&
+          system_settings.last_window_x < x + width &&
+          system_settings.last_window_y >= y &&
+          system_settings.last_window_y < y + height
+        );
+      });
+
+      if (is_in_display) {
+        window_target_x = system_settings.last_window_x;
+        window_target_y = system_settings.last_window_y;
+      }
     }
   }
 
@@ -801,6 +806,7 @@ const system_settings_createWindow = () => {
   system_settings_window = new BrowserWindow({
     width: 880,
     height: 550,
+    parent: opd_main_window,
     resizable: true,
     minimizable: false,
     maximizable: false,
@@ -845,6 +851,7 @@ const session_manager_opd_createWindow = () => {
   session_manager_window = new BrowserWindow({
     width: 900,
     height: 550,
+    parent: opd_main_window,
     resizable: true,
     minimizable: false,
     maximizable: false,
@@ -883,6 +890,7 @@ const about_opd_createWindow = () => {
   about_opd_window = new BrowserWindow({
     width: 680,
     height: 310,
+    parent: opd_main_window,
     resizable: false,
     minimizable: false,
     maximizable: false,
