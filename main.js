@@ -1,4 +1,4 @@
-const {app, BrowserWindow, session, protocol, net, nativeTheme, dialog, shell, ipcMain} = require('electron');
+const {app, BrowserWindow, session, protocol, net, nativeTheme, dialog, shell, ipcMain, screen} = require('electron');
 const {get_update} = require('./lib/app_update');
 const { pathToFileURL } = require('url');
 const path = require("path");
@@ -32,13 +32,16 @@ function is_first_running(check_flag){
   if(!check_flag){
     dialog.showMessageBox({
       type: 'info',
-      message: "ようこそOpen-Deck試作版へ！",
-      detail:`使い方の映像を視聴しますか？(はじめての方は視聴を推奨)\r\nツールバーのOpen-Deckアイコンをクリックし、「Help」下のYouTubeのリンクから再度視聴できます`,
-      buttons: ["今すぐ映像を見る", "OK"],
+      message: "ようこそOpen-Deckへ！",
+      detail:`使い方の映像や公式マニュアル(ドキュメント)を視聴・確認しますか？(はじめての方は視聴を推奨)\r\nツールバーのOpen-Deckアイコンをクリックし、「Help」下から再度ドキュメントの確認ができます`,
+      buttons: ["今すぐ映像を見る", "今すぐマニュアルを見る", "OK"],
       defaultId: 0
     }).then((res)=>{
       if(res.response == 0){
         shell.openExternal(`https://www.youtube.com/watch?v=nQyuR3_-CqM`);
+      }
+      if(res.response == 1){
+        shell.openExternal(`https://kawa-nobu.github.io/Open-Deck-Wiki/`);
       }
     });
   }
@@ -92,6 +95,9 @@ function system_settings_store_init(mode){
   const settings = {
     last_window_width:1920,
     last_window_height:1080,
+    last_window_x: null,
+    last_window_y: null,
+    last_window_maximized: false,
     color_mode:0,
     scrollbar_thin_mode:true,
     contents_hide_promotion:false,
@@ -156,13 +162,22 @@ function system_settings_save(data){
   let set_status = 0;
   data.forEach((settings)=>{
     debug_stdout(settings_obj[settings.setting_name])
-    if(settings_obj[settings.setting_name] != undefined){
+    if(settings.setting_name in settings_obj){
       switch(settings.setting_name){
         case 'last_window_width':
           settings_obj.last_window_width = settings.value;
           break;
         case 'last_window_height':
           settings_obj.last_window_height = settings.value;;
+          break;
+        case 'last_window_x':
+          settings_obj.last_window_x = settings.value;
+          break;
+        case 'last_window_y':
+          settings_obj.last_window_y = settings.value;
+          break;
+        case 'last_window_maximized':
+          settings_obj.last_window_maximized = settings.value;
           break;
         case 'color_mode':
           if(settings.value == 0){
@@ -226,21 +241,29 @@ let is_open_system_settings_window = false;
 let is_open_about_opd_window = false;
 //メインウィンドウ作成
 const createWindow = () => {
+  const sys_settings_path = system_settings_store_init('nomal');
+  const settings_path = settings_store_init('nomal');
+  const profile_path = profile_store_init('nomal');
+  const session_path = session_store_init('nomal');
+
+  const system_settings = load_system_settings();
+
   opd_main_window = new BrowserWindow({
     width: 1920,
     height: 1080,
     minWidth : 720,
     minHeight: 480,
+    show: false,
     title: "Open-Deck",
     webPreferences: {
       preload: path.join(app.getAppPath(), './preload.js'),
       additionalArguments: [
         `--opd_resource_path=${path.join(app.getAppPath(), 'opd_resource')}`,
         `--opd_webview_preload_path=${path.join(app.getAppPath(), 'preload_webview.js')}`,
-        `--opd_system_settings_path=${system_settings_store_init('nomal')}`,
-        `--opd_settings_store_path=${settings_store_init('nomal')}`,
-        `--opd_profile_store_path=${profile_store_init('nomal')}`,
-        `--opd_session_store_path=${session_store_init('nomal')}`,
+        `--opd_system_settings_path=${sys_settings_path}`,
+        `--opd_settings_store_path=${settings_path}`,
+        `--opd_profile_store_path=${profile_path}`,
+        `--opd_session_store_path=${session_path}`,
         `--opd_version=${app.getVersion()}`
       ],
       nodeIntegration: false,
@@ -250,8 +273,110 @@ const createWindow = () => {
       backgroundThrottling: false,
     }
   })
-  //システム設定読み出し
-  const system_settings = load_system_settings();
+
+  // 保存された位置・サイズを復元
+  const window_restore_width = Math.max(system_settings.last_window_width || 1920, 720);
+  const window_restore_height = Math.max(system_settings.last_window_height || 1080, 480);
+
+  let window_target_x = null;
+  let window_target_y = null;
+
+  // 位置情報がディスプレイ範囲内なら座標も復元対象にする
+  if (system_settings.last_window_x !== null && system_settings.last_window_y !== null) {
+    const displays = screen.getAllDisplays();
+
+    if (displays.length === 0) {
+      debug_stdout('no displays detected!');
+    }else{
+      const is_in_display = displays.some(display => {
+        const { x, y, width, height } = display.bounds;
+        return (
+          system_settings.last_window_x >= x &&
+          system_settings.last_window_x < x + width &&
+          system_settings.last_window_y >= y &&
+          system_settings.last_window_y < y + height
+        );
+      });
+
+      if (is_in_display) {
+        window_target_x = system_settings.last_window_x;
+        window_target_y = system_settings.last_window_y;
+      }
+    }
+  }
+
+  // 復元処理
+  if (window_target_x !== null && window_target_y !== null) {
+    // 目的のディスプレイに移動させる
+    opd_main_window.setPosition(window_target_x, window_target_y);
+
+    // ディスプレイ移動が完了後にサイズを設定し直す
+    setImmediate(() => {
+      if (opd_main_window && !opd_main_window.isDestroyed()) {
+        opd_main_window.setSize(window_restore_width, window_restore_height);
+        // 位置も再設定
+        opd_main_window.setPosition(window_target_x, window_target_y);
+        debug_stdout(`final bounds-> ${JSON.stringify(opd_main_window.getBounds())}`);
+        opd_main_window.show();
+      }
+    });
+  } else {
+    // 位置情報がない or 範囲外なら、サイズだけ設定して中央配置
+    opd_main_window.setSize(window_restore_width, window_restore_height);
+    opd_main_window.center();
+    opd_main_window.show();
+  }
+
+  // ウィンドウを表示
+  opd_main_window.show();
+
+  // 最大化状態を復元
+  if (system_settings.last_window_maximized) {
+    opd_main_window.maximize();
+  }
+
+  /* ウィンドウ関連設定保存 */
+  let save_bounds_timer = null;
+  const save_window_bounds = () => {
+    if (save_bounds_timer) clearTimeout(save_bounds_timer);
+    save_bounds_timer = setTimeout(() => {
+      if (!opd_main_window || opd_main_window.isDestroyed()) return;
+
+      const is_maximized = opd_main_window.isMaximized();
+      const is_minimized = opd_main_window.isMinimized();
+      const is_fullscreen = opd_main_window.isFullScreen();
+
+      const settings_to_save = [
+        { setting_name: 'last_window_maximized', value: is_maximized }
+      ];
+
+      if (!is_maximized && !is_minimized && !is_fullscreen) {
+        // 通常状態のサイズを取得
+        const bounds = opd_main_window.getNormalBounds();
+
+        debug_stdout(`save bounds-> ${JSON.stringify(bounds)}`);
+
+        settings_to_save.push(
+          { setting_name: 'last_window_width', value: bounds.width },
+          { setting_name: 'last_window_height', value: bounds.height },
+          { setting_name: 'last_window_x', value: bounds.x },
+          { setting_name: 'last_window_y', value: bounds.y }
+        );
+      }
+
+      system_settings_save(settings_to_save);
+      debug_stdout('window bounds saved');
+    }, 500);
+  };
+
+  // ready-to-show 以降にリスナーを登録
+  opd_main_window.once('ready-to-show', () => {
+    opd_main_window.on('resize', save_window_bounds);
+    opd_main_window.on('move', save_window_bounds);
+    opd_main_window.on('maximize', save_window_bounds);
+    opd_main_window.on('unmaximize', save_window_bounds);
+  });
+  
   //初期起動案内
   is_first_running(sys_settings_check_flag);
   debug_stdout(system_settings)
@@ -368,8 +493,10 @@ const createWindow = () => {
       //ファイルを返す
       return net.fetch(pathToFileURL(finalPath).toString());
     });
+    
     //ウィンドウを作成する
     createWindow()
+
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length == 0){
         createWindow();
@@ -447,6 +574,22 @@ app.on("ready", ()=>{
 })
 app.on('session-created', (session) => {
   debug_stdout(session);
+
+  //不要なパーミッションを無効化してメモリを削減したい
+  const denied_permissions = [
+    'media', 'camera', 'microphone', 'display-capture',
+    'geolocation', 'midi', 'midiSysex',
+    'hid', 'serial', 'usb', 'bluetooth',
+    'idle-detection', 'background-sync', 'window-management',
+  ];
+  session.setPermissionRequestHandler((webcontents, permission, callback) => {
+    if (denied_permissions.includes(permission)) {
+      debug_stdout(`Permission denied (session created)-> ${permission}`);
+      return callback(false);
+    }
+    callback(true);
+  });
+
   const block_rules = [
     {
       referer: 'https://x.com/compose/post',
@@ -670,6 +813,7 @@ const system_settings_createWindow = () => {
   system_settings_window = new BrowserWindow({
     width: 880,
     height: 550,
+    parent: opd_main_window,
     resizable: true,
     minimizable: false,
     maximizable: false,
@@ -714,6 +858,7 @@ const session_manager_opd_createWindow = () => {
   session_manager_window = new BrowserWindow({
     width: 900,
     height: 550,
+    parent: opd_main_window,
     resizable: true,
     minimizable: false,
     maximizable: false,
@@ -752,6 +897,7 @@ const about_opd_createWindow = () => {
   about_opd_window = new BrowserWindow({
     width: 680,
     height: 310,
+    parent: opd_main_window,
     resizable: false,
     minimizable: false,
     maximizable: false,

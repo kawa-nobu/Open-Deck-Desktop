@@ -138,3 +138,14 @@ window.addEventListener("load", async function(){
         }
     });
 });
+
+document.addEventListener('click', (event) => {
+    const target = event.target.closest('a');
+    const misskey_img_link_filter = target?.querySelector("canvas[title]") == undefined;
+    if(target && target.href && misskey_img_link_filter){
+        event.preventDefault();
+        if(location.host != new URL(target.href).host){
+            opd_system.open_default_browser(target.href);
+        }
+    }
+});
