@@ -24,5 +24,9 @@ contextBridge.exposeInMainWorld("opd_system",{
     async opd_custom_dialog(title, detail){
         const res = await ipcRenderer.invoke('open_custom_dialog', {title:title, detail:detail});
         return res;
-    }
+    },
+    open_default_browser(url){
+        ipcRenderer.send('open_default_browser', url);
+        return true;
+    },
 });

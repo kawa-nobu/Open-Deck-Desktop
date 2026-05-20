@@ -46,5 +46,9 @@ contextBridge.exposeInMainWorld("opd_system",{
     },
     opd_app_exit(){
         ipcRenderer.send('OPD_AppExit');
-    }
+    },
+    open_default_browser(url){
+        ipcRenderer.send('open_default_browser', url);
+        return true;
+    },
 });
