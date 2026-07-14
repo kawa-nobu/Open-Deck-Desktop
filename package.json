@@ -1,7 +1,7 @@
 {
   "name": "open_deck_desktop",
   "productName": "Open-Deck",
-  "version": "1.0.3.1",
+  "version": "1.0.4",
   "description": "Open-Deck",
   "main": "main.js",
   "scripts": {
