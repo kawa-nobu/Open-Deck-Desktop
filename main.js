@@ -410,7 +410,7 @@ const createWindow = () => {
     if(!debug_mode_flag){
       opd_main_window.setMenuBarVisibility(false);
     }
-    opd_main_window.loadURL(`file://${app.getAppPath()}/opd_resource/main.html`);
+    opd_main_window.loadURL(`opd://resources/main.html`);
     //閉じるボタン最小化
     opd_main_window.on('close', (event) => {
       const close_system_settings = load_system_settings();
@@ -844,7 +844,7 @@ const system_settings_createWindow = () => {
     system_settings_window.setMenuBarVisibility(false);
   }
   //system_settings_window.setAlwaysOnTop(true, "screen-saver");
-  system_settings_window.loadURL(`file://${app.getAppPath()}/opd_resource/system_settings.html`);
+  system_settings_window.loadURL(`opd://resources/system_settings.html`);
   system_settings_window.addListener("close", function(){
     is_open_system_settings_window = false;
   });
@@ -889,7 +889,7 @@ const session_manager_opd_createWindow = () => {
     session_manager_window.setMenuBarVisibility(false);
   }
   //session_manager_window.setAlwaysOnTop(true, "screen-saver");
-  session_manager_window.loadURL(`file://${app.getAppPath()}/opd_resource/session_manager.html`);
+  session_manager_window.loadURL(`opd://resources/session_manager.html`);
   session_manager_window.addListener("close", function(){
     is_open_session_manager_window = false;
   })
@@ -930,7 +930,7 @@ const about_opd_createWindow = () => {
     about_opd_window.setMenuBarVisibility(false);
   }
   //about_opd_window.setAlwaysOnTop(true, "screen-saver");
-  about_opd_window.loadURL(`file://${app.getAppPath()}/opd_resource/about_opd.html`);
+  about_opd_window.loadURL(`opd://resources/about_opd.html`);
   about_opd_window.addListener("close", function(){
     is_open_about_opd_window = false;
   })
