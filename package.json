@@ -16,8 +16,8 @@
   "license": "MIT",
   "repository": "github:kawa-nobu/Open-Deck-Desktop",
   "devDependencies": {
-    "electron": "42.1.0",
-    "electron-builder": "26.8.2"
+    "electron": "^42.11.1",
+    "electron-builder": "^26.15.3"
   },
   "build": {
     "appId": "work.kwdev.opdapp.release",
