@@ -48,8 +48,26 @@ function is_first_running(check_flag){
 }
 //警告付きURLオープン
 function open_external_with_warning(url_string) {
+  const ALLOWED_PROTOCOLS = ["http:", "https:"];
   const url = new URL(url_string);
-  
+
+  //許可されたスキーム以外は開かないようにする
+  if (!ALLOWED_PROTOCOLS.includes(url.protocol)) {
+    dialog.showMessageBox({
+      type: "warning",
+      message: "危険な可能性のあるURLを開こうとしています！",
+      detail: `このURLはウェブサイトではなく、お使いのPC上のファイルやアプリケーションを起動する可能性があります。\r\n心当たりがない場合は必ずキャンセルしてください。\r\n形式: ${url.protocol}\r\nURL: ${decodeURIComponent(url.href)}`,
+      buttons: ["開く", "キャンセル"],
+      defaultId: 1,
+      cancelId: 1,
+    }).then((res) => {
+      if (res.response === 0) {
+        shell.openExternal(url.href);
+      }
+    });
+    return;
+  }
+
   //メッセージ表示無効化が設定されていたらそのまま開く
   const settings = load_system_settings();
   if (settings.bypass_url_open_msg) {
@@ -64,6 +82,7 @@ function open_external_with_warning(url_string) {
       detail: `信頼できるURLのみ開く事を推奨します。\r\nURL: ${decodeURIComponent(url.href)}\r\n「開く」押下でウェブサイトへ移動します`,
       buttons: ["開く", "キャンセル"],
       defaultId: 0,
+      cancelId: 1,
     }).then((res) => {
       if (res.response === 0) {
         shell.openExternal(url.href);
