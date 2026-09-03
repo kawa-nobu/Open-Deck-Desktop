@@ -1009,7 +1009,7 @@ async function run(settings, opd_system_settings){
 
     //カラーモード適用
     opd_apply_theme();
-    
+
     //APIリミット表示用
     document.querySelector("#api_limit_status").addEventListener("click", function(){
         if(api_limit_obj != null){
@@ -1141,6 +1141,9 @@ async function run(settings, opd_system_settings){
                         }
                     });
                     document.addEventListener('auxclick', (event) => {
+                        // 中クリックのみ処理する
+                        if (event.button !== 1) return;
+                        
                         const target = event.target.closest('a');
                         const misskey_img_link_filter = target?.querySelector("canvas[title]") == undefined;
                         if(target && target.href && misskey_img_link_filter){
