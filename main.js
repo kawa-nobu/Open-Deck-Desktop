@@ -49,6 +49,15 @@ function is_first_running(check_flag){
 //警告付きURLオープン
 function open_external_with_warning(url_string) {
   const url = new URL(url_string);
+  
+  //メッセージ表示無効化が設定されていたらそのまま開く
+  const settings = load_system_settings();
+  if (settings.bypass_url_open_msg) {
+    shell.openExternal(url.href);
+    return;
+  };
+
+  
   dialog.showMessageBox({
       type: "warning",
       message: "外部のURLを開こうとしています！",
@@ -116,6 +125,7 @@ function system_settings_store_init(mode){
     color_mode:0,
     scrollbar_thin_mode:true,
     contents_hide_promotion:false,
+    bypass_url_open_msg:false,
     window_close_to_minimize:false,
     check_update:true,
   };
@@ -213,6 +223,9 @@ function system_settings_save(data){
           break;
         case 'contents_hide_promotion':
           settings_obj.contents_hide_promotion = settings.value;
+          break;
+        case 'bypass_url_open_msg':
+          settings_obj.bypass_url_open_msg = settings.value;
           break;
         case 'scrollbar_thin_mode':
           settings_obj.scrollbar_thin_mode = settings.value;
