@@ -1,4 +1,4 @@
-const {app, BrowserWindow, session, protocol, net, nativeTheme, dialog, shell, ipcMain, screen} = require('electron');
+const {app, BrowserWindow, session, protocol, net, nativeTheme, dialog, shell, ipcMain, screen, Menu, clipboard} = require('electron');
 const {get_update} = require('./lib/app_update');
 const { pathToFileURL } = require('url');
 const path = require("path");
@@ -45,6 +45,49 @@ function is_first_running(check_flag){
       }
     });
   }
+}
+//警告付きURLオープン
+function open_external_with_warning(url_string) {
+  const ALLOWED_PROTOCOLS = ["http:", "https:"];
+  const url = new URL(url_string);
+
+  //許可されたスキーム以外は開かないようにする
+  if (!ALLOWED_PROTOCOLS.includes(url.protocol)) {
+    dialog.showMessageBox({
+      type: "warning",
+      message: "危険な可能性のあるURLを開こうとしています！",
+      detail: `このURLはウェブサイトではなく、お使いのPC上のファイルやアプリケーションを起動する可能性があります。\r\n心当たりがない場合は必ずキャンセルしてください。\r\n形式: ${url.protocol}\r\nURL: ${decodeURIComponent(url.href)}`,
+      buttons: ["開く", "キャンセル"],
+      defaultId: 1,
+      cancelId: 1,
+    }).then((res) => {
+      if (res.response === 0) {
+        shell.openExternal(url.href);
+      }
+    });
+    return;
+  }
+
+  //メッセージ表示無効化が設定されていたらそのまま開く
+  const settings = load_system_settings();
+  if (settings.bypass_url_open_msg) {
+    shell.openExternal(url.href);
+    return;
+  };
+
+  
+  dialog.showMessageBox({
+      type: "warning",
+      message: "外部のURLを開こうとしています！",
+      detail: `信頼できるURLのみ開く事を推奨します。\r\nURL: ${decodeURIComponent(url.href)}\r\n「開く」押下でウェブサイトへ移動します`,
+      buttons: ["開く", "キャンセル"],
+      defaultId: 0,
+      cancelId: 1,
+    }).then((res) => {
+      if (res.response === 0) {
+        shell.openExternal(url.href);
+      }
+    });
 }
 //アプリケーションアップデートチェック
 async function check_update(){
@@ -101,6 +144,7 @@ function system_settings_store_init(mode){
     color_mode:0,
     scrollbar_thin_mode:true,
     contents_hide_promotion:false,
+    bypass_url_open_msg:false,
     window_close_to_minimize:false,
     check_update:true,
   };
@@ -199,6 +243,9 @@ function system_settings_save(data){
         case 'contents_hide_promotion':
           settings_obj.contents_hide_promotion = settings.value;
           break;
+        case 'bypass_url_open_msg':
+          settings_obj.bypass_url_open_msg = settings.value;
+          break;
         case 'scrollbar_thin_mode':
           settings_obj.scrollbar_thin_mode = settings.value;
           break;
@@ -230,6 +277,68 @@ function load_system_settings(){
   const settings_data = fs.readFileSync(`${app.getPath('userData').replaceAll("\\", "/")}/opd_system_settings.json`, {encoding:'utf-8'});
   return JSON.parse(settings_data);
 }
+
+//webContentsが生成された際の動作
+app.on("web-contents-created", (event, contents) => {
+  //右クリックの動作を定義
+  contents.on("context-menu", (e, params) => {
+    const template = [];
+
+    //テキストで右クリックされた場合
+    if (params.selectionText) {
+      template.push(
+        {
+          label: "コピー",
+          click: () => contents.copy(),
+        },
+        { type: "separator" },
+      );
+    }
+
+    //編集可能で右クリックされた場合
+    if (params.isEditable) {
+      template.push(
+        { label: "元に戻す", click: () => contents.undo() },
+        { label: "やり直し", click: () => contents.redo() },
+        { type: "separator" },
+        { label: "切り取り", click: () => contents.cut() },
+        { label: "コピー", click: () => contents.copy() },
+        { label: "貼り付け", click: () => contents.paste() },
+        { label: "すべて選択", click: () => contents.selectAll() },
+      );
+    }
+
+    //リンクが右クリックされた場合
+    if (params.linkURL) {
+      template.push(
+        {
+          label: "リンクをコピー",
+          click: () => clipboard.writeText(params.linkURL),
+        },
+        {
+          label: "ブラウザで開く",
+          click: () => open_external_with_warning(params.linkURL),
+        },
+      );
+    }
+
+    //画像が右クリックされた場合
+    if (params.mediaType === "image") {
+      template.push({
+        label: "画像URLをコピー",
+        click: () => clipboard.writeText(params.srcURL),
+      });
+    }
+
+    if (template.length === 0) return;
+
+    const win = BrowserWindow.fromWebContents(
+      contents.hostWebContents || contents,
+    );
+    Menu.buildFromTemplate(template).popup({ window: win });
+  });
+});
+
 //ウィンドウ
 let opd_main_window;
 let session_manager_window;
@@ -326,6 +435,17 @@ const createWindow = () => {
     opd_main_window.center();
     opd_main_window.show();
   }
+  
+  //開発モードの場合、F12でDevToolsを開くようにする
+  if(debug_mode_flag){
+    opd_main_window.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12') {
+        event.preventDefault();
+        // メインウィンドウのDevToolsを明示的に開く
+        opd_main_window.webContents.toggleDevTools();
+      }
+    });
+  }
 
   // ウィンドウを表示
   opd_main_window.show();
@@ -399,7 +519,7 @@ const createWindow = () => {
     if(!debug_mode_flag){
       opd_main_window.setMenuBarVisibility(false);
     }
-    opd_main_window.loadURL(`file://${app.getAppPath()}/opd_resource/main.html`);
+    opd_main_window.loadURL(`opd://resources/main.html`);
     //閉じるボタン最小化
     opd_main_window.on('close', (event) => {
       const close_system_settings = load_system_settings();
@@ -833,7 +953,7 @@ const system_settings_createWindow = () => {
     system_settings_window.setMenuBarVisibility(false);
   }
   //system_settings_window.setAlwaysOnTop(true, "screen-saver");
-  system_settings_window.loadURL(`file://${app.getAppPath()}/opd_resource/system_settings.html`);
+  system_settings_window.loadURL(`opd://resources/system_settings.html`);
   system_settings_window.addListener("close", function(){
     is_open_system_settings_window = false;
   });
@@ -878,7 +998,7 @@ const session_manager_opd_createWindow = () => {
     session_manager_window.setMenuBarVisibility(false);
   }
   //session_manager_window.setAlwaysOnTop(true, "screen-saver");
-  session_manager_window.loadURL(`file://${app.getAppPath()}/opd_resource/session_manager.html`);
+  session_manager_window.loadURL(`opd://resources/session_manager.html`);
   session_manager_window.addListener("close", function(){
     is_open_session_manager_window = false;
   })
@@ -919,7 +1039,7 @@ const about_opd_createWindow = () => {
     about_opd_window.setMenuBarVisibility(false);
   }
   //about_opd_window.setAlwaysOnTop(true, "screen-saver");
-  about_opd_window.loadURL(`file://${app.getAppPath()}/opd_resource/about_opd.html`);
+  about_opd_window.loadURL(`opd://resources/about_opd.html`);
   about_opd_window.addListener("close", function(){
     is_open_about_opd_window = false;
   })
@@ -958,18 +1078,7 @@ ipcMain.handle('open_custom_dialog', async function(e, data){
 //外部URLオープン
 ipcMain.on('open_default_browser', function(e, data){
   debug_stdout(data)
-  const url = new URL(data)
-  dialog.showMessageBox({
-    type: 'warning',
-    message: "外部のURLを開こうとしています！",
-    detail:`信頼できるURLのみ開く事を推奨します。\r\nURL: ${decodeURIComponent(url.href)}\r\n「開く」押下でウェブサイトへ移動します`,
-    buttons: ["開く", "キャンセル"],
-    defaultId: 0
-  }).then((res)=>{
-    if(res.response == 0){
-      shell.openExternal(url.href);
-    }
-  });
+  open_external_with_warning(data);
   return true;
 })
 //ライセンスディレクトリオープン

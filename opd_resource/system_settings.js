@@ -12,6 +12,9 @@ window.addEventListener("load", async function(){
             case 'contents_hide_promotion':
                 document.getElementById('opd_hide_promotion').checked = settings_data_obj[key];
                 break;
+            case 'bypass_url_open_msg':
+                document.getElementById('opd_msg_bypass_url_open_msg').checked = settings_data_obj[key];
+                break;
             case 'window_close_to_minimize':
                 document.getElementById('opd_close_btn_mini').checked = settings_data_obj[key];
                 break;
@@ -33,6 +36,9 @@ window.addEventListener("load", async function(){
     });
     document.getElementById('opd_hide_promotion').addEventListener("change", async function(){
         opd_system.opd_set_data_store('opd_system_settings', [{setting_name:"contents_hide_promotion", value:this.checked}])
+    });
+    document.getElementById('opd_msg_bypass_url_open_msg').addEventListener("change", async function(){
+        opd_system.opd_set_data_store('opd_system_settings', [{setting_name:"bypass_url_open_msg", value:this.checked}])
     });
     document.getElementById('opd_check_update').addEventListener("change", async function(){
         opd_system.opd_set_data_store('opd_system_settings', [{setting_name:"check_update", value:this.checked}])

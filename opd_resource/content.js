@@ -94,6 +94,17 @@ if(true){
    window.addEventListener("load", function(){
     init();
     })
+
+    // ダークモード検出
+    const opd_color_scheme = window.matchMedia('(prefers-color-scheme: dark)');
+    function opd_apply_theme() {
+        const el = document.getElementById("opd_main_element");
+        if (el) {
+            el.setAttribute("opd-dsp-theme", opd_color_scheme.matches ? "dark" : "light");
+        }
+    }
+    opd_color_scheme.addEventListener("change", opd_apply_theme);
+
     //chrome.runtime.sendMessage({message: "dnr_upd"});
     async function init(){
         let settings_local_strage_settings = JSON.parse(await opd_system.opd_get_data_store('opd_settings'));
@@ -583,42 +594,94 @@ async function run(settings, opd_system_settings){
     /*#main_rack_element section:first-child{
         margin-left:110px
     }*/
-    @media (prefers-color-scheme: dark) {
-        #main_rack_element{
+
+    /* ライトモード */
+    #opd_main_element[opd-dsp-theme="light"] {
+        color-scheme: light;
+    }
+
+    /*ダークモード検出時*/
+    #opd_main_element[opd-dsp-theme="dark"] {
+        color-scheme: dark;
+
+        & #main_rack_element {
             background-color: black !important;
+            scrollbar-color: auto;
         }
-        .dsp_column_draggable_false, #first_rack_element, #second_rack_element, #second_rack_element, #main_bar_empty_column{
+
+        & .dsp_column_draggable_false,
+        & #first_rack_element,
+        & #second_rack_element,
+        & #main_bar_empty_column {
             background-color: black !important;
+            color: white;
         }
-        .dsp_column_draggable_true, .dsp_column_title{
+
+        & .dsp_column_draggable_true,
+        & .dsp_column_title {
             background-color: #2e2e2e !important;
         }
-        .dsp_btn_add_post_img, .dsp_btn_add_tl_img, .dsp_btn_add_ntfc_img, .dsp_btn_add_explr_img, .dsp_btn_add_misskey_img, .dsp_btn_add_bsky_img, .dsp_btn_second_rack_img, .dsp_btn_profile_add_img, .dsp_btn_sesssion_manager_add_img, .dsp_btn_profile_delete_img, .dsp_btn_system_settings_add_img, .dsp_column_move_icon, .opd_ui_icon_color{
+
+        & .dsp_btn_add_post_img,
+        & .dsp_btn_add_tl_img,
+        & .dsp_btn_add_ntfc_img,
+        & .dsp_btn_add_explr_img,
+        & .dsp_btn_add_misskey_img,
+        & .dsp_btn_add_bsky_img,
+        & .dsp_btn_second_rack_img,
+        & .dsp_btn_profile_add_img,
+        & .dsp_btn_sesssion_manager_add_img,
+        & .dsp_btn_system_settings_add_img,
+        & .dsp_btn_profile_delete_img,
+        & .dsp_column_move_icon,
+        & .opd_ui_icon_color {
             filter: brightness(0) saturate(100%) invert(48%) sepia(0%) saturate(93%) hue-rotate(266deg) brightness(93%) contrast(86%);
         }
-        #api_limit_status:hover {
+
+        & #api_limit_status:hover,
+        & .dsp_btn_parent:hover,
+        & .dsp_column_btn:hover,
+        & .profile_val_now:hover {
             background: #555555;
         }
-        .dsp_btn_parent:hover{
-            background: #555555;
-        }
-        .dsp_column_btn:hover {
-            background: #555555;
-        }
-        .profile_val_now:hover {
-            background: #555555;
-        }
-        .dsp_column_settings_panel {
+
+        & .dsp_column_settings_panel {
             background: #2e2e2e;
             border: 1px solid #5d5d5d;
         }
-        .dsp_column_settings_list {
-            background: #474747
+
+        & .dsp_column_settings_list {
+            background: #474747;
+        }
+        
+        & .dsp_column_title {
+            background-color: transparent !important;
+        }
+
+        /* 焼付き軽減 */
+        & div[opd_column_type="dsp_column"] {
+            filter: brightness(0.7);
+            transition: filter 0.3s;
+            &:hover {
+                filter: brightness(1);
+            }
+        }
+
+        & .column_bar {
+            filter: brightness(0.85);
+            transition: filter 0.3s;
+            &:hover {
+                filter: brightness(1);
+            }
+        }
+
+        & #main_bar_empty_column, div[opd_column_type="empty_column"], div[opd_column_type="second_empty_column"] {
+            filter: brightness(0.7);
         }
     }
     /* メディアビューワー */
-    ::backdrop {
-        background: rgba(0, 0, 0, 0.9);
+    #opd_media_viewer::backdrop {
+        background: rgba(0, 0, 0, 0.6);
     }
     #opd_media_viewer:focus {
         outline: none;
@@ -630,20 +693,22 @@ async function run(settings, opd_system_settings){
         outline: none;
     }
     .opd_media_viewer_func_btn.media_switch_btn{
-        width: 80px;
-        height: 80px;
+        border: 2px solid rgba(128, 128, 128, 0.4);
+    background: rgba(128, 128, 128, 0.3);
+        width: 60px;
+        height: 60px;
         margin: 10px;
-        border-radius: 10px;
+        border-radius: 100px;
         display: flex;
         justify-content: center;
         align-items: center;
     }
     .opd_media_viewer_func_btn_circle button{
-        border: 0;
-        background: #00000000;
+        border: 2px solid rgba(128, 128, 128, 0.4);
+    background: rgba(128, 128, 128, 0.3);
         cursor: pointer;
         outline: none;
-        border-radius: 10px;
+        border-radius: 100px;
     }
     button[disabled].opd_media_viewer_func_btn{
         visibility: hidden;
@@ -651,51 +716,48 @@ async function run(settings, opd_system_settings){
     .opd_media_viewer_func_btn_icon_color{
         filter: brightness(0) saturate(100%) invert(96%) sepia(6%) saturate(0%) hue-rotate(285deg) brightness(115%) contrast(100%);
     }
+    .media_viewer_icon_close,
+    .media_viewer_icon_forward,
+    .media_viewer_icon_next,
+    .media_viewer_icon_download {
+        display: block;
+        background-size: 20px;
+        background-repeat: no-repeat;
+        background-position: center;
+        width: 30px;
+        height: 30px;
+        padding: 5px;
+    }
+    .opd_media_viewer_func_btn_circle button,
+    .opd_media_viewer_func_btn.media_switch_btn {
+        border: 2px solid rgba(128, 128, 128, 0.4);
+        background: rgba(128, 128, 128, 0.5);
+        cursor: pointer;
+        outline: none;
+        border-radius: 100px;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
     .opd_media_viewer_func_btn:hover{
-        background: #2f2f2fa3;
+        background: rgba(128, 128, 128, 0.6);
     }
     .opd_media_viewer_func_btn_circle button:hover{
-        background: #2f2f2fa3;
+        background: rgba(128, 128, 128, 0.6);
     }
-    .media_viewer_icon_close{
-        display: block;
+    .media_viewer_icon_close {
         background-image: url(${opd_system.load_resource(ui_icon_define.column_close)});
-        background-size: 20px;
-        background-repeat: no-repeat;
-        background-position: center;
-        width: 40px;
-        height: 40px;
-        padding: 5px;
     }
-    .media_viewer_icon_forward{
-        display: block;
+    .media_viewer_icon_forward {
         background-image: url(${opd_system.load_resource(ui_icon_define.forward)});
-        background-size: 20px;
-        background-repeat: no-repeat;
-        background-position: center;
-        width: 30px;
-        height: 30px;
-        padding: 5px;
     }
-    .media_viewer_icon_next{
-        display: block;
+    .media_viewer_icon_next {
         background-image: url(${opd_system.load_resource(ui_icon_define.next)});
-        background-size: 20px;
-        background-repeat: no-repeat;
-        background-position: center;
-        width: 30px;
-        height: 30px;
-        padding: 5px;
     }
-    .media_viewer_icon_download{
-        display: block;
+    .media_viewer_icon_download {
         background-image: url(${opd_system.load_resource(ui_icon_define.download)});
-        background-size: 20px;
-        background-repeat: no-repeat;
-        background-position: center;
-        width: 30px;
-        height: 30px;
-        padding: 5px;
     }
     </style>
     <style opd_electron_style>
@@ -944,6 +1006,10 @@ async function run(settings, opd_system_settings){
     ins_html.innerHTML = `${side_bar}<div id="main_rack_element" style=""><div id="first_rack_element" style="height: 100%;display:flex;flex-direction:row;">${main_column_html}</div><div id="second_rack_element" style="display:flex;flex-direction:row;">${second_column_html}</div></div>`;
     //HTML挿入
     document.body.insertAdjacentElement("afterbegin", ins_html);
+
+    //カラーモード適用
+    opd_apply_theme();
+
     //APIリミット表示用
     document.querySelector("#api_limit_status").addEventListener("click", function(){
         if(api_limit_obj != null){
@@ -1075,6 +1141,9 @@ async function run(settings, opd_system_settings){
                         }
                     });
                     document.addEventListener('auxclick', (event) => {
+                        // 中クリックのみ処理する
+                        if (event.button !== 1) return;
+                        
                         const target = event.target.closest('a');
                         const misskey_img_link_filter = target?.querySelector("canvas[title]") == undefined;
                         if(target && target.href && misskey_img_link_filter){
