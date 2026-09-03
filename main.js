@@ -326,6 +326,17 @@ const createWindow = () => {
     opd_main_window.center();
     opd_main_window.show();
   }
+  
+  //開発モードの場合、F12でDevToolsを開くようにする
+  if(debug_mode_flag){
+    opd_main_window.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12') {
+        event.preventDefault();
+        // メインウィンドウのDevToolsを明示的に開く
+        opd_main_window.webContents.toggleDevTools();
+      }
+    });
+  }
 
   // ウィンドウを表示
   opd_main_window.show();
