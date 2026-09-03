@@ -94,6 +94,17 @@ if(true){
    window.addEventListener("load", function(){
     init();
     })
+
+    // ダークモード検出
+    const opd_color_scheme = window.matchMedia('(prefers-color-scheme: dark)');
+    function opd_apply_theme() {
+        const el = document.getElementById("opd_main_element");
+        if (el) {
+            el.setAttribute("opd-dsp-theme", opd_color_scheme.matches ? "dark" : "light");
+        }
+    }
+    opd_color_scheme.addEventListener("change", opd_apply_theme);
+
     //chrome.runtime.sendMessage({message: "dnr_upd"});
     async function init(){
         let settings_local_strage_settings = JSON.parse(await opd_system.opd_get_data_store('opd_settings'));
@@ -583,37 +594,89 @@ async function run(settings, opd_system_settings){
     /*#main_rack_element section:first-child{
         margin-left:110px
     }*/
-    @media (prefers-color-scheme: dark) {
-        #main_rack_element{
+
+    /* ライトモード */
+    #opd_main_element[opd-dsp-theme="light"] {
+        color-scheme: light;
+    }
+
+    /*ダークモード検出時*/
+    #opd_main_element[opd-dsp-theme="dark"] {
+        color-scheme: dark;
+
+        & #main_rack_element {
             background-color: black !important;
+            scrollbar-color: auto;
         }
-        .dsp_column_draggable_false, #first_rack_element, #second_rack_element, #second_rack_element, #main_bar_empty_column{
+
+        & .dsp_column_draggable_false,
+        & #first_rack_element,
+        & #second_rack_element,
+        & #main_bar_empty_column {
             background-color: black !important;
+            color: white;
         }
-        .dsp_column_draggable_true, .dsp_column_title{
+
+        & .dsp_column_draggable_true,
+        & .dsp_column_title {
             background-color: #2e2e2e !important;
         }
-        .dsp_btn_add_post_img, .dsp_btn_add_tl_img, .dsp_btn_add_ntfc_img, .dsp_btn_add_explr_img, .dsp_btn_add_misskey_img, .dsp_btn_add_bsky_img, .dsp_btn_second_rack_img, .dsp_btn_profile_add_img, .dsp_btn_sesssion_manager_add_img, .dsp_btn_profile_delete_img, .dsp_btn_system_settings_add_img, .dsp_column_move_icon, .opd_ui_icon_color{
+
+        & .dsp_btn_add_post_img,
+        & .dsp_btn_add_tl_img,
+        & .dsp_btn_add_ntfc_img,
+        & .dsp_btn_add_explr_img,
+        & .dsp_btn_add_misskey_img,
+        & .dsp_btn_add_bsky_img,
+        & .dsp_btn_second_rack_img,
+        & .dsp_btn_profile_add_img,
+        & .dsp_btn_sesssion_manager_add_img,
+        & .dsp_btn_system_settings_add_img,
+        & .dsp_btn_profile_delete_img,
+        & .dsp_column_move_icon,
+        & .opd_ui_icon_color {
             filter: brightness(0) saturate(100%) invert(48%) sepia(0%) saturate(93%) hue-rotate(266deg) brightness(93%) contrast(86%);
         }
-        #api_limit_status:hover {
+
+        & #api_limit_status:hover,
+        & .dsp_btn_parent:hover,
+        & .dsp_column_btn:hover,
+        & .profile_val_now:hover {
             background: #555555;
         }
-        .dsp_btn_parent:hover{
-            background: #555555;
-        }
-        .dsp_column_btn:hover {
-            background: #555555;
-        }
-        .profile_val_now:hover {
-            background: #555555;
-        }
-        .dsp_column_settings_panel {
+
+        & .dsp_column_settings_panel {
             background: #2e2e2e;
             border: 1px solid #5d5d5d;
         }
-        .dsp_column_settings_list {
-            background: #474747
+
+        & .dsp_column_settings_list {
+            background: #474747;
+        }
+        
+        & .dsp_column_title {
+            background-color: transparent !important;
+        }
+
+        /* 焼付き軽減 */
+        & div[opd_column_type="dsp_column"] {
+            filter: brightness(0.7);
+            transition: filter 0.3s;
+            &:hover {
+                filter: brightness(1);
+            }
+        }
+
+        & .column_bar {
+            filter: brightness(0.85);
+            transition: filter 0.3s;
+            &:hover {
+                filter: brightness(1);
+            }
+        }
+
+        & #main_bar_empty_column, div[opd_column_type="empty_column"], div[opd_column_type="second_empty_column"] {
+            filter: brightness(0.7);
         }
     }
     /* メディアビューワー */
@@ -943,6 +1006,10 @@ async function run(settings, opd_system_settings){
     ins_html.innerHTML = `${side_bar}<div id="main_rack_element" style=""><div id="first_rack_element" style="height: 100%;display:flex;flex-direction:row;">${main_column_html}</div><div id="second_rack_element" style="display:flex;flex-direction:row;">${second_column_html}</div></div>`;
     //HTML挿入
     document.body.insertAdjacentElement("afterbegin", ins_html);
+
+    //カラーモード適用
+    opd_apply_theme();
+    
     //APIリミット表示用
     document.querySelector("#api_limit_status").addEventListener("click", function(){
         if(api_limit_obj != null){
