@@ -337,6 +337,17 @@ app.on("web-contents-created", (event, contents) => {
     );
     Menu.buildFromTemplate(template).popup({ window: win });
   });
+  //GoogleログインなどのSSO認証で使用する認可されたポップアップだけを許可する
+  contents.setWindowOpenHandler(({ url }) => {
+    try {
+        const url = new URL(url);
+        const authDomains = ['accounts.google.com', 'accounts.youtube.com', 'appleid.apple.com'];
+        if (url.protocol === 'https:' && authDomains.includes(url.host)) {
+            return { action: 'allow' };
+        }
+    } catch (e) {}
+    return { action: 'deny' };
+  });
 });
 
 //ウィンドウ
