@@ -279,6 +279,7 @@ function load_system_settings(){
 }
 
 //webContentsが生成された際の動作
+let is_google_notice_showing = false;
 app.on("web-contents-created", (event, contents) => {
   //右クリックの動作を定義
   contents.on("context-menu", (e, params) => {
@@ -336,6 +337,46 @@ app.on("web-contents-created", (event, contents) => {
       contents.hostWebContents || contents,
     );
     Menu.buildFromTemplate(template).popup({ window: win });
+  });
+  //GoogleログインなどのSSO認証で使用する認可されたポップアップだけを許可する
+  contents.setWindowOpenHandler(({ url }) => {
+    try {
+        const parsedUrl = new URL(url);
+        const authDomains = ['accounts.google.com', 'accounts.youtube.com', 'appleid.apple.com'];
+
+        //認証ポップアップは、ログイン系ページから開かれた場合のみ許可する
+        if (parsedUrl.protocol === 'https:' && authDomains.includes(parsedUrl.host)) {
+            const opener = new URL(contents.getURL());
+            const loginPaths = ['/', '/login', '/signup', '/i/flow/login', '/i/flow/signup', '/i/jf/onboarding/web'];
+            //TODO: その他SNSでSSOが導入された際は複数のホスト判定に対応させること
+            if (opener.host === 'x.com' && loginPaths.includes(opener.pathname)) {
+              //Googleはセキュリティポリシー上、埋め込みブラウザでの認証を許可していないので別のログイン方法に誘導する
+              if (parsedUrl.host === 'accounts.google.com' || parsedUrl.host === 'accounts.youtube.com') {
+                if (!is_google_notice_showing) {
+                  is_google_notice_showing = true;
+                  dialog.showMessageBox({
+                    type: "info",
+                    message: "Googleアカウントでのログインは利用できません",
+                    detail: "Googleのセキュリティポリシーにより、デスクトップアプリ内からGoogleアカウントへログインすることはできません。\r\nOpen-Deckではユーザーアカウント保護やセキュリティポリシー遵守の観点から、迂回経路を実装していません。\r\n\r\n以下の方法でログインしてください。\r\n・メールアドレスや電話番号、ユーザー名とパスワード\r\n・Appleアカウント\r\n\r\nGoogleアカウントでXに登録した場合は、ウェブブラウザでXにログインし、設定からパスワードを追加すると、ログインできるようになります。",
+                    buttons: ["OK", "ブラウザでパスワードを設定"],
+                    defaultId: 0,
+                    noLink: true,
+                  }).then((res) => {
+                    is_google_notice_showing = false;
+                    if (res.response === 1) {
+                      shell.openExternal("https://x.com/settings/password");
+                    }
+                  });
+                }
+                return { action: 'deny' };
+              }
+              return { action: 'allow' };
+            }
+        }
+
+        open_external_with_warning(parsedUrl.href);
+    } catch (e) {}
+    return { action: 'deny' };
   });
 });
 
