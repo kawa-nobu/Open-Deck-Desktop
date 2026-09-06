@@ -342,9 +342,18 @@ app.on("web-contents-created", (event, contents) => {
     try {
         const parsedUrl = new URL(url);
         const authDomains = ['accounts.google.com', 'accounts.youtube.com', 'appleid.apple.com'];
+
+        //認証ポップアップは、ログイン系ページから開かれた場合のみ許可する
         if (parsedUrl.protocol === 'https:' && authDomains.includes(parsedUrl.host)) {
-            return { action: 'allow' };
+            const opener = new URL(contents.getURL());
+            const loginPaths = ['/', '/login', '/signup', '/i/flow/login', '/i/flow/signup', '/i/jf/onboarding/web'];
+            //TODO: その他SNSでSSOが導入された際は複数のホスト判定に対応させること
+            if (opener.host === 'x.com' && loginPaths.includes(opener.pathname)) {
+                return { action: 'allow' };
+            }
         }
+
+        open_external_with_warning(parsedUrl.href);
     } catch (e) {}
     return { action: 'deny' };
   });
