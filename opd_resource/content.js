@@ -40,6 +40,14 @@ const ui_icon_define = {
     misskey:"icon/misskey.svg",
     bluesky:"icon/bluesky.svg",
 }
+const tweet_visible_ctrl_selectors = {
+    //引用を除く(従来の仕様に従い、引用ポストは中身に関係なく非表示にする)
+    text_only: 'div[data-testid="cellInnerDiv"]:has([data-testid="tweetPhoto"], [data-testid="videoPlayer"], [data-testid="videoComponent"], div[role="link"][tabindex="0"] [data-testid="Tweet-User-Avatar"]){visibility: hidden; height: 0;}',
+    media_only: 'div[data-testid="cellInnerDiv"]:has([data-testid="tweet"]):not(:has([data-testid="tweetPhoto"], [data-testid="videoPlayer"], [data-testid="videoComponent"])), div[data-testid="cellInnerDiv"]:has(div[role="link"][tabindex="0"] [data-testid="Tweet-User-Avatar"]){visibility: hidden; height: 0;}',
+    //引用を含む(本人・引用元のどちらかにメディアがあれば「メディアあり」として判定する)
+    text_only_quote: 'div[data-testid="cellInnerDiv"]:has([data-testid="tweetPhoto"], [data-testid="videoPlayer"], [data-testid="videoComponent"]){visibility: hidden; height: 0;}',
+    media_only_quote: 'div[data-testid="cellInnerDiv"]:has([data-testid="tweet"]):not(:has([data-testid="tweetPhoto"], [data-testid="videoPlayer"], [data-testid="videoComponent"])){visibility: hidden; height: 0;}',
+}
 //UNIX時間分秒変換
 function unix_time_mmss(input){
     const date = new Date(input * 1000);
@@ -728,6 +736,29 @@ async function run(settings, opd_system_settings){
         height: 30px;
         padding: 5px;
     }
+
+    /* メディア読み込み中アニメーション */
+    .opd_media_viewer_loading {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        margin: 0 80px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: opd_media_viewer_spin 0.8s linear infinite;
+    }
+    .opd_media_viewer_loading[hidden] {
+        display: none;
+    }
+    /* 読み込み中はメディアを隠してスピナーだけ表示する */
+    .opd_media_viewer_loading:not([hidden]) ~ [data-media] {
+        display: none;
+    }
+    @keyframes opd_media_viewer_spin {
+        to { transform: rotate(360deg); }
+    }
+
     .opd_media_viewer_func_btn_circle button,
     .opd_media_viewer_func_btn.media_switch_btn {
         border: 2px solid rgba(128, 128, 128, 0.4);
@@ -891,8 +922,8 @@ async function run(settings, opd_system_settings){
     //カラム要素作成-挿入
     let default_element_bar = `<span class="dsp_column_btn"><label class="dsp_column_settings_btn opd_ui_icon_color" title="カラム設定"><input class="opd_settings_btn" type="button" value="S"></label></span><span class="dsp_column_btn"><label class="dsp_column_change_session_btn opd_ui_icon_color" title="セッション切替"><input class="opd_change_session_btn" type="button"></label></span><span class="dsp_column_btn"><input class="opd_banner" type="checkbox" title="バナー表示切り替え" %column_banner_ch%><label class="dsp_column_banner_btn opd_ui_icon_color"></label></span><span class="dsp_column_btn"><input class="opd_top_bar" type="checkbox" title="トップ表示切り替え" %column_top_bar_ch%><label class="dsp_column_top_btn opd_ui_icon_color"></label></span>`;
     let othersns_default_element_bar = `<span class="dsp_column_btn"><label class="dsp_column_settings_btn opd_ui_icon_color" title="カラム設定"><input class="opd_settings_btn" type="button" value="S"></label></span><span class="dsp_column_btn"><label class="dsp_column_change_session_btn opd_ui_icon_color" title="セッション切替"><input class="opd_change_session_btn" type="button"></label></span>`;
-    let column_settings_panel = `<div class="dsp_column_settings_panel"><div class="dsp_column_settings_panel_content"><h2>設定</h2><div class="dsp_column_settings_list"><div class="dsp_column_settings_content_div">表示モード<span><select class="opd_tw_view_mode" column_tw_view_mode_val="%column_tw_view_mode%"><option value="0">すべて</option><option value="1">テキストのみ</option><option value="2">画像・動画付のみ</option></select></span></div><div class="dsp_column_settings_content_div">RT非表示<span><input class="opd_hide_rt_tweet" type="checkbox" %column_hide_rt_tweet%></span></div><div class="dsp_column_settings_content_div">カラム幅<span><select class="opd_column_size_preset"><option value="0">小</option><option value="1">中</option><option value="2">大</option><option value="3">カスタム</option></select></span></div><div class="dsp_column_settings_content_div">カラム幅カスタム<span><input type="button" class="column_width_btn" value="カスタム設定" style="vertical-align: text-top;font-size: 0.8rem;"/></span></div><div class="dsp_column_settings_content_div">自動更新<span><input class="opd_a_reload_bar" type="checkbox" %column_auto_reload_ch%></span></div><div class="dsp_column_settings_content_div">自動更新間隔<span><input class="opd_column_settings_input_text opd_a_reload_time_setting" type="number" value="%column_auto_reload_time%">秒</span></div></div><div class="dsp_column_settings_panel_close_btn_wrap"><input type="button" class="dsp_column_settings_panel_close_btn" value="設定を閉じる" style="vertical-align: text-top;font-size: 0.8rem;"/></div></div></div>` ;
-    let column_settings_panel_no_auto = `<div class="dsp_column_settings_panel"><div class="dsp_column_settings_panel_content"><h2>設定</h2><div class="dsp_column_settings_list"><div class="dsp_column_settings_content_div">表示モード<span><select class="opd_tw_view_mode" column_tw_view_mode_val="%column_tw_view_mode%"><option value="0">すべて</option><option value="1">テキストのみ</option><option value="2">画像・動画付のみ</option></select></span></div><div class="dsp_column_settings_content_div">RT非表示<span><input class="opd_hide_rt_tweet" type="checkbox" %column_hide_rt_tweet%></span></div><div class="dsp_column_settings_content_div">カラム幅<span><select class="opd_column_size_preset"><option value="0">小</option><option value="1">中</option><option value="2">大</option><option value="3">カスタム</option></select></span></div><div class="dsp_column_settings_content_div">カラム幅カスタム<span><input type="button" class="column_width_btn" value="カスタム設定" style="vertical-align: text-top;font-size: 0.8rem;"/></span></div></div><div class="dsp_column_settings_panel_close_btn_wrap"><input type="button" class="dsp_column_settings_panel_close_btn" value="設定を閉じる" style="vertical-align: text-top;font-size: 0.8rem;"/></div></div></div>` ;
+    let column_settings_panel = `<div class="dsp_column_settings_panel"><div class="dsp_column_settings_panel_content"><h2>設定</h2><div class="dsp_column_settings_list"><div class="dsp_column_settings_content_div">表示モード<span><select class="opd_tw_view_mode" column_tw_view_mode_val="%column_tw_view_mode%"><option value="0">すべて</option><option value="1">テキストのみ (引用なし)</option><option value="2">画像・動画付のみ (引用なし)</option><option value="3">テキストのみ (引用あり)</option><option value="4">画像・動画付のみ (引用あり)</option></select></span></div><div class="dsp_column_settings_content_div">RT非表示<span><input class="opd_hide_rt_tweet" type="checkbox" %column_hide_rt_tweet%></span></div><div class="dsp_column_settings_content_div">カラム幅<span><select class="opd_column_size_preset"><option value="0">小</option><option value="1">中</option><option value="2">大</option><option value="3">カスタム</option></select></span></div><div class="dsp_column_settings_content_div">カラム幅カスタム<span><input type="button" class="column_width_btn" value="カスタム設定" style="vertical-align: text-top;font-size: 0.8rem;"/></span></div><div class="dsp_column_settings_content_div">自動更新<span><input class="opd_a_reload_bar" type="checkbox" %column_auto_reload_ch%></span></div><div class="dsp_column_settings_content_div">自動更新間隔<span><input class="opd_column_settings_input_text opd_a_reload_time_setting" type="number" value="%column_auto_reload_time%">秒</span></div></div><div class="dsp_column_settings_panel_close_btn_wrap"><input type="button" class="dsp_column_settings_panel_close_btn" value="設定を閉じる" style="vertical-align: text-top;font-size: 0.8rem;"/></div></div></div>` ;
+    let column_settings_panel_no_auto = `<div class="dsp_column_settings_panel"><div class="dsp_column_settings_panel_content"><h2>設定</h2><div class="dsp_column_settings_list"><div class="dsp_column_settings_content_div">表示モード<span><select class="opd_tw_view_mode" column_tw_view_mode_val="%column_tw_view_mode%"><option value="0">すべて</option><option value="1">テキストのみ (引用なし)</option><option value="2">画像・動画付のみ (引用なし)</option><option value="3">テキストのみ (引用あり)</option><option value="4">画像・動画付のみ (引用あり)</option></select></span></div><div class="dsp_column_settings_content_div">RT非表示<span><input class="opd_hide_rt_tweet" type="checkbox" %column_hide_rt_tweet%></span></div><div class="dsp_column_settings_content_div">カラム幅<span><select class="opd_column_size_preset"><option value="0">小</option><option value="1">中</option><option value="2">大</option><option value="3">カスタム</option></select></span></div><div class="dsp_column_settings_content_div">カラム幅カスタム<span><input type="button" class="column_width_btn" value="カスタム設定" style="vertical-align: text-top;font-size: 0.8rem;"/></span></div></div><div class="dsp_column_settings_panel_close_btn_wrap"><input type="button" class="dsp_column_settings_panel_close_btn" value="設定を閉じる" style="vertical-align: text-top;font-size: 0.8rem;"/></div></div></div>` ;
     let column_settings_panel_othersns = `<div class="dsp_column_settings_panel"><div class="dsp_column_settings_panel_content"><h2>設定</h2><div class="dsp_column_settings_list"><div class="dsp_column_settings_content_div">カラム幅<span><select class="opd_column_size_preset"><option value="0">小</option><option value="1">中</option><option value="2">大</option><option value="3">カスタム</option></select></span></div><div class="dsp_column_settings_content_div">カラム幅カスタム<span><input type="button" class="column_width_btn" value="カスタム設定" style="vertical-align: text-top;font-size: 0.8rem;"/></span></div></div><div class="dsp_column_settings_panel_close_btn_wrap"><input type="button" class="dsp_column_settings_panel_close_btn" value="設定を閉じる" style="vertical-align: text-top;font-size: 0.8rem;"/></div></div></div>` ;
     let default_element = {
         empty_column:{html:`<section draggable="false" id="column_%column_num%" class="dsp_column_draggable_false dsp_column dsp_column_emptycolumn"><div opd_column_type="empty_column" opd_column_width="%column_width_num%" style="height: 100%;min-width: 30rem;display: flex;align-items: center;justify-content: center;"><div><img src="${opd_system.load_resource(ui_icon_define.column_add_1)}" style="filter: brightness(0) saturate(100%) invert(61%) sepia(13%) saturate(13%) hue-rotate(335deg) brightness(89%) contrast(79%);"><p>ツールバーからカラムを追加</p></div></div></section>`},
@@ -1211,26 +1242,23 @@ async function run(settings, opd_system_settings){
                     let opd_column_top_visible_checkbox = opd_column_div.querySelector(".opd_top_bar");
                     let opd_column_tw_view_mode_opt = opd_column_div.querySelector(".opd_tw_view_mode");
                     let opd_column_hide_rt_tweet_opt = opd_column_div.querySelector(".opd_hide_rt_tweet");
+
+                    //ユーザー設定CSS挿入(サニタイズ済みのカスタムCSSを挿入)
+                    if(opd_system_settings.user_custom_css_twitter_sanitized){
+                        this.insertCSS(opd_system_settings.user_custom_css_twitter_sanitized);
+                    }
+
                     //バナー表示設定読み込み適用
-                   //Electron CSS挿入キー
+                    //Electron CSS挿入キー
                     //バナー表示ロード
-                    if(el_banner_key == null){
-                        //this.contentWindow.document.querySelector("head").insertAdjacentHTML("beforeend", `<style opd_banner_css></style>`);
-                        this.insertCSS('header[role="banner"]{};').then((key)=>{
-                            el_banner_key = key;
-                        })
+                    if(this.opd_banner_key != null){
+                        this.removeInsertedCSS(this.opd_banner_key);
+                        this.opd_banner_key = null;
                     }
                     if(opd_column_banner_checkbox?.checked != true){
-                        //this.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = `header[role="banner"]{display:none};`;
-                        this.insertCSS('header[role="banner"]{display:none};').then((key)=>{
-
-                            el_banner_key = key;
+                        this.insertCSS('header[role="banner"]{display:none;}').then((key)=>{
+                            this.opd_banner_key = key;
                         })
-                    }else{
-                        //this.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = ``;
-                        if(el_banner_key != null){
-                            this.removeInsertedCSS(el_banner_key)
-                        }
                     }
                     
                     //トップ検索欄等削除適用
@@ -1273,17 +1301,29 @@ async function run(settings, opd_system_settings){
                     opd_column_tw_view_mode_opt.value = opd_column_tw_view_mode_opt.getAttribute("column_tw_view_mode_val");
                     switch (opd_column_tw_view_mode_opt.getAttribute("column_tw_view_mode_val")) {
                         case "0":
-                            //this.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = ``;
+                            //すべて
                             break;
                         case "1":
-                            //this.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = `div[data-testid="cellInnerDiv"]:has(div[aria-labelledby]){visibility: hidden; height: 0;}`;
-                            this.insertCSS('div[data-testid="cellInnerDiv"]:has(div[aria-labelledby]){visibility: hidden; height: 0;}').then((key)=>{
+                            //テキストのみ
+                            this.insertCSS(tweet_visible_ctrl_selectors.text_only).then((key)=>{
                                 el_content_filter_key = key;
                             })
                             break;
                         case "2":
-                            //this.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = `div[data-testid="cellInnerDiv"]:not(:has(div[aria-labelledby])){visibility: hidden; height: 0;}`;
-                            this.insertCSS('div[data-testid="cellInnerDiv"]:not(:has(div[aria-labelledby])){visibility: hidden; height: 0;}').then((key)=>{
+                            //動画・画像のみ
+                            this.insertCSS(tweet_visible_ctrl_selectors.media_only).then((key)=>{
+                                el_content_filter_key = key;
+                            })
+                            break;
+                        case "3":
+                            //テキストのみ(引用元も含む)
+                            this.insertCSS(tweet_visible_ctrl_selectors.text_only_quote).then((key)=>{
+                                el_content_filter_key = key;
+                            })
+                            break;
+                        case "4":
+                            //動画・画像のみ(引用元も含む)
+                            this.insertCSS(tweet_visible_ctrl_selectors.media_only_quote).then((key)=>{
                                 el_content_filter_key = key;
                             })
                             break;
@@ -1291,7 +1331,6 @@ async function run(settings, opd_system_settings){
                             if(el_content_filter_key != null){
                                 this.removeInsertedCSS(el_content_filter_key)
                             }
-                            //this.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = ``;
                             break;
                     }
                 }
@@ -1505,22 +1544,14 @@ async function run(settings, opd_system_settings){
                         opd_column_banner_checkbox?.addEventListener("change", async function(){
                             column_settings_save("", last_load_profile);
                             let banner_mode_target_object = this.closest("div[opd_column_type]").querySelector("webview");
-                            if(el_banner_key == null){
-                                //banner_mode_target_object.contentWindow.document.querySelector("head").insertAdjacentHTML("beforeend", `<style opd_banner_css></style>`);
-                                banner_mode_target_object.insertCSS('header[role="banner"]{};').then((key)=>{
-                                    el_banner_key = key;
-                                })
+                            if(banner_mode_target_object.opd_banner_key != null){
+                                banner_mode_target_object.removeInsertedCSS(banner_mode_target_object.opd_banner_key);
+                                banner_mode_target_object.opd_banner_key = null;
                             }
                             if(this.checked != true){
-                                //banner_mode_target_object.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = `header[role="banner"]{visibility: hidden; width: 0;};`;
-                                banner_mode_target_object.insertCSS('header[role="banner"]{display:none};').then((key)=>{
-                                    el_banner_key = key;
+                                banner_mode_target_object.insertCSS('header[role="banner"]{display:none;}').then((key)=>{
+                                    banner_mode_target_object.opd_banner_key = key;
                                 })
-                            }else{
-                                //banner_mode_target_object.contentWindow.document.querySelector('head style[opd_banner_css]').textContent = ``;
-                                if(el_banner_key != null){
-                                    banner_mode_target_object.removeInsertedCSS(el_banner_key)
-                                }
                             }
                         });
 
@@ -1654,17 +1685,29 @@ async function run(settings, opd_system_settings){
                             }
                             switch (this.value) {
                                 case "0":
-                                    //tw_view_mode_target_object.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = ``;
+                                    //すべて
                                     break;
                                 case "1":
-                                    //tw_view_mode_target_object.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = `div[data-testid="cellInnerDiv"]:has(div[aria-labelledby]){visibility: hidden; height: 0;}`;
-                                    tw_view_mode_target_object.insertCSS('div[data-testid="cellInnerDiv"]:has(div[aria-labelledby]){visibility: hidden; height: 0;}').then((key)=>{
+                                    //テキストのみ
+                                    tw_view_mode_target_object.insertCSS(tweet_visible_ctrl_selectors.text_only).then((key)=>{
                                         el_content_filter_key = key;
                                     })
                                     break;
                                 case "2":
-                                    //tw_view_mode_target_object.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = `div[data-testid="cellInnerDiv"]:not(:has(div[aria-labelledby])){visibility: hidden; height: 0;}`;
-                                    tw_view_mode_target_object.insertCSS('div[data-testid="cellInnerDiv"]:not(:has(div[aria-labelledby])){visibility: hidden; height: 0;}').then((key)=>{
+                                    //動画・画像のみ
+                                    tw_view_mode_target_object.insertCSS(tweet_visible_ctrl_selectors.media_only).then((key)=>{
+                                        el_content_filter_key = key;
+                                    })
+                                    break;
+                                case "3":
+                                    //テキストのみ(引用元も含む)
+                                    tw_view_mode_target_object.insertCSS(tweet_visible_ctrl_selectors.text_only_quote).then((key)=>{
+                                        el_content_filter_key = key;
+                                    })
+                                    break;
+                                case "4":
+                                    //動画・画像のみ(引用元も含む)
+                                    tw_view_mode_target_object.insertCSS(tweet_visible_ctrl_selectors.media_only_quote).then((key)=>{
                                         el_content_filter_key = key;
                                     })
                                     break;
@@ -1672,17 +1715,15 @@ async function run(settings, opd_system_settings){
                                     if(el_content_filter_key != null){
                                         tw_view_mode_target_object.removeInsertedCSS(el_content_filter_key)
                                     }
-                                    //tw_view_mode_target_object.contentWindow.document.querySelector('head style[opd_tw_view_mode_css]').textContent = ``;
                                     break;
-                                    }
-                                })
                             }
-                        }
+                        })
+                    }
+                }
+                //カラムバー空白領域クリックでトップにスクロール
+                opd_column_scroll_to_top.addEventListener("click", () => { this.executeJavaScript('location.host === "misskey.io" ? document.querySelector("._pageScrollable")?.scrollTo({ top: 0, behavior: "auto" }) : scrollTo({ top: 0, behavior: "auto" })'); });
 
-                        //カラムバー空白領域クリックでトップにスクロール
-                        opd_column_scroll_to_top.addEventListener("click", () => { this.executeJavaScript('location.host === "misskey.io" ? document.querySelector("._pageScrollable")?.scrollTo({ top: 0, behavior: "auto" }) : scrollTo({ top: 0, behavior: "auto" })'); });
-
-                    }, {once: true})
+            }, { once: true })
             //exploreURL検出処理
             const opd_column_mutate = column_object[index].closest("div[opd_column_type]");
             if(opd_column_mutate.getAttribute("opd_column_type") == 'explore'){
