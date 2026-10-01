@@ -147,6 +147,8 @@ function system_settings_store_init(mode){
     bypass_url_open_msg:false,
     window_close_to_minimize:false,
     check_update:true,
+    user_custom_css_twitter:"",
+    user_custom_css_twitter_sanitized:"",
   };
 
   if(fs.existsSync(sys_settings_filepath) && mode == 'nomal'){
@@ -251,6 +253,12 @@ function system_settings_save(data){
           break;
         case 'check_update':
           settings_obj.check_update = settings.value;
+          break;
+        case 'user_custom_css_twitter':
+          settings_obj.user_custom_css_twitter = settings.value;
+          break;
+        case 'user_custom_css_twitter_sanitized':
+          settings_obj.user_custom_css_twitter_sanitized = settings.value;
           break;
         default:
           set_status = 1;
