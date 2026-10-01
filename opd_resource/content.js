@@ -1237,16 +1237,24 @@ async function run(settings, opd_system_settings){
             //バナー/表示モード変更
             column_object[index].addEventListener("did-finish-load", function(){
                 let opd_column_div = this.closest("div[opd_column_type]");
+                const column_sns_provider = opd_column_div.getAttribute('opd_provider');
+
+                //ユーザー設定CSS挿入(サニタイズ済みのカスタムCSSを挿入)
+                const user_custom_css = {
+                    twitter: opd_system_settings.user_custom_css_twitter_sanitized,
+                    //misskey: opd_system_settings.user_custom_css_misskey_sanitized,
+                    //bluesky: opd_system_settings.user_custom_css_bluesky_sanitized,
+                }[column_sns_provider];
+
+                if(user_custom_css){
+                    this.insertCSS(user_custom_css);
+                }
+
                 if(this.getAttribute("opd_webview_width_only") != ''){
                     let opd_column_banner_checkbox = opd_column_div.querySelector(".opd_banner");
                     let opd_column_top_visible_checkbox = opd_column_div.querySelector(".opd_top_bar");
                     let opd_column_tw_view_mode_opt = opd_column_div.querySelector(".opd_tw_view_mode");
                     let opd_column_hide_rt_tweet_opt = opd_column_div.querySelector(".opd_hide_rt_tweet");
-
-                    //ユーザー設定CSS挿入(サニタイズ済みのカスタムCSSを挿入)
-                    if(opd_system_settings.user_custom_css_twitter_sanitized){
-                        this.insertCSS(opd_system_settings.user_custom_css_twitter_sanitized);
-                    }
 
                     //バナー表示設定読み込み適用
                     //Electron CSS挿入キー
