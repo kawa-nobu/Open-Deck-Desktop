@@ -1138,7 +1138,7 @@ async function run(settings, opd_system_settings){
                         });
                     });
                     const column_settings = {column_settings:profile_store[index].profile};
-                    run(column_settings, profile_store);
+                    run(column_settings, opd_system_settings);
                 }
             })
         }
