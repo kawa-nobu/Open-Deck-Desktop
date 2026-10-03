@@ -127,3 +127,18 @@ contextBridge.exposeInMainWorld("opd_system",{
         return res;
     }
 });
+
+//カラムの外ではマウスのサイドボタンを無効化する(別のカラムのページが動くのを防ぐ)
+const isSide = (e) => e.button === 3 || e.button === 4;
+
+function blockSideButton(e) {
+  if (!isSide(e)) return;
+  e.stopImmediatePropagation();
+  if (!e.type.startsWith('pointer')) e.preventDefault();
+}
+
+addEventListener('pointerdown', blockSideButton, true);
+addEventListener('pointerup', blockSideButton, true);
+addEventListener('mousedown', blockSideButton, true);
+addEventListener('mouseup', blockSideButton, true);
+addEventListener('auxclick', blockSideButton, true);

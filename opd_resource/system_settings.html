@@ -99,6 +99,40 @@
             min-width: 0;
         }
 
+        /* 項目内を縦並びにする */
+        .session_list .session_item>div.vertical {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+
+        .session_list .session_item>div.vertical p {
+            margin: 0;
+        }
+
+        .session_list .session_item>div.vertical button {
+            align-self: flex-end;
+        }
+
+        .custom_css_notice strong {
+            color: #c62828;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            resize: vertical;
+            background: #ffffff;
+            color: #111111;
+            border: 1px solid #808080;
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            tab-size: 4;
+        }
+
         input[type="text"],
         select {
             background: #ffffff;
@@ -194,6 +228,16 @@
             input[type="button"]:hover {
                 background: #585858;
             }
+
+            .custom_css_notice strong {
+                color: #ff8a80;
+            }
+
+            textarea {
+                background: #1f1f1f;
+                color: #f3f3f3;
+                border: 1px solid rgb(135, 135, 135);
+            }
         }
     </style>
 </head>
@@ -267,6 +311,23 @@
                 <li class="session_item">
                     <div><label for="opd_check_update">起動時に自動でアップデートを確認する</label>
                         <input id="opd_check_update" type="checkbox">
+                    </div>
+                </li>
+            </ul>
+        </section>
+        <section class="setting_list">
+            <header>
+                <h3>カスタムCSS(上級者向け / Twitterのみ有効 / 次回起動時有効)</h3>
+            </header>
+            <ul class="box session_list">
+                <li class="session_item">
+                    <div class="vertical custom_css_notice">
+                        <p>上級者向け機能です。CSSの内容や設定したことによって発生した不具合について開発者はサポートしません。</p>
+                        <p>外部URLなどは設定時に除去されますが、完全な安全は保証できません。</p>
+                        <p><strong>他人に「貼り付けて」と言われたCSSは危険な場合があります。</strong>必ず内容を理解した上で使用してください。</p>
+                        <p>設定は次回Open-Deckの起動時から適用されます。</p>
+                        <textarea id="opd_custom_css_twitter" spellcheck="false" autocomplete="off" placeholder="/* ここにCSSを入力 */"></textarea>
+                        <button id="opd_custom_css_twitter_apply">設定</button>
                     </div>
                 </li>
             </ul>
