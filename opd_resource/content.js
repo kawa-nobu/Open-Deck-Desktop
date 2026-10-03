@@ -11,6 +11,8 @@ const url_path = new URL(location.href);
 let is_shift_pressed = false;
 let profile_store;
 let last_load_profile = 0;
+let opd_media_viewer = null;
+let opd_media_viewer_handler = null;
 const ui_icon_define = {
     banner_hide:"icon/banner_hide.svg",
     top_bar_hide:"icon/top_hide.svg",
@@ -186,10 +188,14 @@ async function run(settings, opd_system_settings){
     }
     profile_list_html = `<div class="profile_val_now" title="使用中のプロファイル">${last_load_profile}</div><div class="dsp_profile_list"><div id="profile_btn_list">${profile_list_btn_html}</div>`;
     //画像表示パネル
-    const media_viewer = new OpdExtMediaViewer();
-    opd_system.opd_open_media_viewer_dialog(function(media_info, selected_index){
-        media_viewer.Preview(media_info, selected_index);
-    });
+    opd_media_viewer = new OpdExtMediaViewer();
+    //プロファイル切替で再実行されても多重登録しないようにする
+    if(!opd_media_viewer_handler){
+        opd_media_viewer_handler = function(media_info, selected_index){
+            opd_media_viewer.Preview(media_info, selected_index);
+        };
+        opd_system.opd_open_media_viewer_dialog(opd_media_viewer_handler);
+    }
     //CSSタグ追加
     document.querySelector("head").insertAdjacentHTML("afterbegin", `<style second_column_css></style>
     <style opd_default_css>
