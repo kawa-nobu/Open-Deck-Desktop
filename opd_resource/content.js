@@ -1128,7 +1128,7 @@ async function run(settings, opd_system_settings){
                     }
                     preload_desc_count += 1;
                 }
-                if(await opd_system.opd_custom_dialog('プロファイル読み込み', `プロファイル「${index}」を読み込みますか?\r\nカラム構成\r\n${preload_desc_array.join("\r\n")}`)){
+                if(await opd_system.opd_custom_dialog('プロファイル読み込み', `プロファイル「${index}」を読み込みますか?\r\nカラム構成\r\n${preload_desc_array.join("\r\n")}`)){                    
                     document.querySelector("#opd_main_element").remove();
                     last_load_profile = index;
                     opd_system.opd_get_data_store('opd_settings').then(function(value){
@@ -1213,6 +1213,11 @@ async function run(settings, opd_system_settings){
                                 new_session_webview.setAttribute(attr.name, attr.value);
                             }
                         }
+                        //ピン留めや表示されているパスのままセッション切り替えれるようにする
+                        if(session_change_btn_parent.getAttribute("opd_column_type") == "explore"){
+                            const explore_now_path = session_change_btn_parent.getAttribute("opd_pinned_path") || session_change_btn_parent.getAttribute("opd_explore_path");
+                            new_session_webview.setAttribute("src", `https://x.com${explore_now_path}`);
+                        }
                         if(session_id != "default_session"){
                             new_session_webview.setAttribute('partition', `persist:${session_id}`);
                             session_name_dsp = `@${session_name}`;
@@ -1229,11 +1234,7 @@ async function run(settings, opd_system_settings){
                     });
                 });
             }
-            //ElectronCSS挿入用
-            let el_banner_key = null;
-            let el_top_visible_key = null;
-            let el_content_filter_key = null;
-            let el_hide_rt_tweet = null;
+
             //バナー/表示モード変更
             column_object[index].addEventListener("did-finish-load", function(){
                 let opd_column_div = this.closest("div[opd_column_type]");
@@ -1255,9 +1256,7 @@ async function run(settings, opd_system_settings){
                     let opd_column_top_visible_checkbox = opd_column_div.querySelector(".opd_top_bar");
                     let opd_column_tw_view_mode_opt = opd_column_div.querySelector(".opd_tw_view_mode");
                     let opd_column_hide_rt_tweet_opt = opd_column_div.querySelector(".opd_hide_rt_tweet");
-
-                    //バナー表示設定読み込み適用
-                    //Electron CSS挿入キー
+                
                     //バナー表示ロード
                     if(this.opd_banner_key != null){
                         this.removeInsertedCSS(this.opd_banner_key);
@@ -1268,87 +1267,100 @@ async function run(settings, opd_system_settings){
                             this.opd_banner_key = key;
                         })
                     }
-                    
+                
                     //トップ検索欄等削除適用
+                    if(this.opd_top_visible_key != null){
+                        this.removeInsertedCSS(this.opd_top_visible_key);
+                        this.opd_top_visible_key = null;
+                    }
                     if(opd_column_top_visible_checkbox?.checked != true){
                         const top_back_btn_color_css = 'button[data-testid="app-bar-back"]{background-color: #ffffff33 !important;}button[data-testid="app-bar-back"]:hover{background-color: #ffffff4d !important;}';
                         if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "explore"){
-                            //div[data-testid="primaryColumn"] div[tabindex="0"][aria-label] div:has(form[role="search"]){display:none;}
-                            //this.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1)div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1)`;
                             this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
-                                el_top_visible_key = key;
+                                this.opd_top_visible_key = key;
+                            })
+                        }else if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "home"){
+                            this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
+                                this.opd_top_visible_key = key;
                             })
                         }else{
-                            if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "home"){
-                                //this.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){display:none;} div[role="progressbar"] + div{display:none;}`;
-                                this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
-                                    el_top_visible_key = key;
-                                })
-                            }else{
-                                //this.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){display:none;}`;
-                                this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
-                                    el_top_visible_key = key;
-                                })
-                            }
-                        }
-                    }else{
-                        //this.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = ``;
-                        /*if(el_top_visible_key != null){
-                            this.removeInsertedCSS(el_top_visible_key)
-                        }*/
-                    }
-                    //RT非表示設定読み込み適用
-                    if(opd_column_hide_rt_tweet_opt != null){
-                        if(opd_column_hide_rt_tweet_opt.checked){
-                            this.insertCSS('div[data-testid="cellInnerDiv"]:has(a>span[data-testid="socialContext"]){visibility: hidden; height: 0;}').then((key)=>{
-                                el_hide_rt_tweet = key;
+                            this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
+                                this.opd_top_visible_key = key;
                             })
                         }
                     }
+                
+                    //RT非表示設定読み込み適用
+                    if(this.opd_hide_rt_key != null){
+                        this.removeInsertedCSS(this.opd_hide_rt_key);
+                        this.opd_hide_rt_key = null;
+                    }
+                    if(opd_column_hide_rt_tweet_opt?.checked){
+                        this.insertCSS('div[data-testid="cellInnerDiv"]:has(a>span[data-testid="socialContext"]){visibility: hidden; height: 0;}').then((key)=>{
+                            this.opd_hide_rt_key = key;
+                        })
+                    }
+                
                     //ツイート表示項目設定読み込み適用
+                    if(this.opd_content_filter_key != null){
+                        this.removeInsertedCSS(this.opd_content_filter_key);
+                        this.opd_content_filter_key = null;
+                    }
                     opd_column_tw_view_mode_opt.value = opd_column_tw_view_mode_opt.getAttribute("column_tw_view_mode_val");
-                    switch (opd_column_tw_view_mode_opt.getAttribute("column_tw_view_mode_val")) {
-                        case "0":
-                            //すべて
-                            break;
+                    switch (opd_column_tw_view_mode_opt.value) {
                         case "1":
                             //テキストのみ
                             this.insertCSS(tweet_visible_ctrl_selectors.text_only).then((key)=>{
-                                el_content_filter_key = key;
+                                this.opd_content_filter_key = key;
                             })
                             break;
                         case "2":
                             //動画・画像のみ
                             this.insertCSS(tweet_visible_ctrl_selectors.media_only).then((key)=>{
-                                el_content_filter_key = key;
+                                this.opd_content_filter_key = key;
                             })
                             break;
                         case "3":
                             //テキストのみ(引用元も含む)
                             this.insertCSS(tweet_visible_ctrl_selectors.text_only_quote).then((key)=>{
-                                el_content_filter_key = key;
+                                this.opd_content_filter_key = key;
                             })
                             break;
                         case "4":
                             //動画・画像のみ(引用元も含む)
                             this.insertCSS(tweet_visible_ctrl_selectors.media_only_quote).then((key)=>{
-                                el_content_filter_key = key;
+                                this.opd_content_filter_key = key;
                             })
                             break;
                         default:
-                            if(el_content_filter_key != null){
-                                this.removeInsertedCSS(el_content_filter_key)
-                            }
+                            //すべて
                             break;
                     }
                 }
-                //ポストカラムの動作
-                if(this.closest('div[opd_column_type="post"]')){
-                    const post_column_webview = opd_column_div.querySelector("webview");
-                    //文章校正機能
-                    const ext_text_review = new OpdExtTextReview();
-                    const review_icon = opd_system.load_resource_to_b64(ui_icon_define.text_review);
-                    ext_text_review.Init(post_column_webview, review_icon);
+
+                //カラム拡張機能を適用
+                {
+                    const column_type = opd_column_div.getAttribute("opd_column_type");
+                    //自動更新(タイマー側は毎回 webview.opd_auto_reload を参照するので、差し替えるだけでよい)
+                    this.opd_auto_reload = new OpdExtAutoReload();
+                    this.opd_auto_reload.Init(this);
+                    if(column_type === "home" || column_type === "explore" || column_type === "notification"){
+                        //ポストコントローラー関係仕込み
+                        const posts_controller = new OpdPostsController();
+                        posts_controller.Init(this);
+                    }
+                    if(column_type === "home" || column_type === "explore"){
+                        //メディアビューワー関連仕込み
+                        const column_media_viewer_blocker = new OpdMediaViewerBlocker();
+                        column_media_viewer_blocker.Init(this);
+                    }
+                    //ポストカラムの動作
+                    if(this.closest('div[opd_column_type="post"]')){
+                        //文章校正機能
+                        const ext_text_review = new OpdExtTextReview();
+                        const review_icon = opd_system.load_resource_to_b64(ui_icon_define.text_review);
+                        ext_text_review.Init(this, review_icon);
+                    }
                 }
             })
             //各カラム読み込み後の動作(init)
@@ -1364,24 +1376,7 @@ async function run(settings, opd_system_settings){
                 let opd_column_tw_view_mode_opt = opd_column_div.querySelector(".opd_tw_view_mode");
                 let opd_column_scroll_to_top = opd_column_div.querySelector(".opd_column_scroll_to_top");
                 let opd_column_hide_rt_tweet_opt = opd_column_div.querySelector(".opd_hide_rt_tweet");
-                let column_content_reload = null;
-                //自動更新関連仕込み
-                if(mode != "session_set"){
-                    const column_type = opd_column_div.getAttribute("opd_column_type");
-                    const target_column = opd_column_div.querySelector("webview");
-                    column_content_reload = new OpdExtAutoReload();
-                    column_content_reload.Init(target_column);
-                    if(column_type === "home" || column_type === "explore" || column_type === "notification"){
-                        //ポストコントローラー関係仕込み
-                        const posts_controller = new OpdPostsController();
-                        posts_controller.Init(target_column);
-                    }
-                    if(column_type === "home" || column_type === "explore"){
-                        //メディアビューワー関連仕込み
-                        const column_media_viewer_blocker = new OpdMediaViewerBlocker();
-                        column_media_viewer_blocker.Init(target_column);
-                    }
-                }
+
                 //設定パネルイベント
                 if(mode != "session_set"){
                     opd_column_div.querySelector(".opd_settings_btn").addEventListener("click", function(){
@@ -1502,8 +1497,6 @@ async function run(settings, opd_system_settings){
                 //他SNSカラム対応
                 if(this.getAttribute("opd_webview_width_only") != ''){
                     //自動更新初期適用
-                    let reload_test = 0;
-                    let auto_reload_int = null;//チェックボックスイベントにも再利用
                     if(opd_column_auto_reload_checkbox != null){
                         //Home, Exproleカラムホバー中 自動更新上部遷移停止
                         opd_column_div.querySelector("webview").addEventListener("mouseover", function(){
@@ -1512,7 +1505,7 @@ async function run(settings, opd_system_settings){
                         opd_column_div.querySelector("webview").addEventListener("mouseleave", function(){
                             this.setAttribute("auto_reload_mouse_hover", "false");
                         });
-                        const opd_column_webview = opd_column_div.querySelector("webview");
+
                         if(mode != "session_set"){
                             opd_column_auto_reload_time_reload.addEventListener("change", function(){
                                 const auto_reload_time = opd_column_div.querySelector(".opd_a_reload_time_setting");
@@ -1526,25 +1519,35 @@ async function run(settings, opd_system_settings){
                                 }
                             });
                         }
-                        //初期チェック動作
+                        //初期チェック動作(セッション切替時は古いタイマーを止めて再度設定する)
                         if(opd_column_auto_reload_checkbox.checked){
                             const auto_reload_time_input = opd_column_div.querySelector(".opd_a_reload_time_setting");
-                            const auto_reload_load_time = Number(auto_reload_time_input.value) * 1000;
                             auto_reload_time_input.disabled = true;
-                            auto_reload_int = setInterval(function(){
-                                const now_url = new URL(opd_column_webview.getURL());
-                                const path_name = now_url.pathname;
+                            clearInterval(opd_column_div.opd_auto_reload_int);
+                            opd_column_div.opd_auto_reload_int = setInterval(function(){
+                                //カラムが閉じられていたらタイマーを止める
+                                if(!opd_column_div.isConnected){
+                                    clearInterval(opd_column_div.opd_auto_reload_int);
+                                    return;
+                                }
+                                //毎回「現在の」webviewを取得する
+                                const target_webview = opd_column_div.querySelector("webview");
+                                if(!target_webview?.opd_auto_reload) return;
+                                let path_name;
+                                try{
+                                    path_name = new URL(target_webview.getURL()).pathname;
+                                }catch(e){
+                                    return; //dom-ready前など
+                                }
                                 if(['/home', '/search'].includes(path_name) || path_name.startsWith('/i/lists')){
-                                    if(opd_column_webview.getAttribute("auto_reload_mouse_hover") == "false"){
-                                        if (column_content_reload){
-                                            column_content_reload.Reload(opd_column_webview);
-                                            setTimeout(() => {
-                                                opd_column_webview.executeJavaScript("window.scrollTo({ top: 0, behavior: 'auto' })");
-                                            }, 100);
-                                        }
+                                    if(target_webview.getAttribute("auto_reload_mouse_hover") == "false"){
+                                        target_webview.opd_auto_reload.Reload(target_webview);
+                                        setTimeout(() => {
+                                            target_webview.executeJavaScript("window.scrollTo({ top: 0, behavior: 'auto' })");
+                                        }, 100);
                                     }
-                                };
-                            }, auto_reload_load_time);
+                                }
+                            }, Number(auto_reload_time_input.value) * 1000);
                         }
                     }
                     if(mode != "session_set"){
@@ -1565,40 +1568,26 @@ async function run(settings, opd_system_settings){
 
                         //トップ検索欄等削除イベント
                         opd_column_top_visible_checkbox?.addEventListener("change", async function(){
-                            
                             column_settings_save("", last_load_profile);
                             let topvisible_mode_target_object = this.closest("div[opd_column_type]").querySelector("webview");
-                            if(el_top_visible_key == null){
-                                //topvisible_mode_target_object.contentWindow.document.querySelector("head").insertAdjacentHTML("beforeend", `<style opd_top_visible_css></style>`);
-                                topvisible_mode_target_object.insertCSS('div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){}[data-testid="app-bar-back"]{}').then((key)=>{
-                                    el_top_visible_key = key;
-                                })
+                            if(topvisible_mode_target_object.opd_top_visible_key != null){
+                                topvisible_mode_target_object.removeInsertedCSS(topvisible_mode_target_object.opd_top_visible_key);
+                                topvisible_mode_target_object.opd_top_visible_key = null;
                             }
                             if(this.checked != true){
                                 const top_back_btn_color_css = 'button[data-testid="app-bar-back"]{background-color: #ffffff33 !important;}button[data-testid="app-bar-back"]:hover{background-color: #ffffff4d !important;}';
-                                //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"] div[tabindex="0"][aria-label] div:has(form[role="search"]), div[data-testid="primaryColumn"] div[tabindex="0"][aria-label] div:has(h2[role="heading"]){display:none;};`;
                                 if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "explore"){
-                                    //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible;}`;
                                     topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
-                                        el_top_visible_key = key;
-                                    })    
+                                        topvisible_mode_target_object.opd_top_visible_key = key;
+                                    })
+                                }else if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "home"){
+                                    topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
+                                        topvisible_mode_target_object.opd_top_visible_key = key;
+                                    })
                                 }else{
-                                    if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "home"){
-                                        //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;} [data-testid="app-bar-back"]{visibility: visible;} div[aria-label="ホームタイムライン"] * +div:first-of-type [data-testid="cellInnerDiv"]{} div[role="progressbar"] + div{display:none;}`;
-                                        topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
-                                            el_top_visible_key = key;
-                                        })
-                                    }else{
-                                        //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = `div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible;}`;
-                                        topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
-                                            el_top_visible_key = key;
-                                        })
-                                    }
-                                }
-                            }else{
-                                //topvisible_mode_target_object.contentWindow.document.querySelector('head style[opd_top_visible_css]').textContent = ``;
-                                if(el_top_visible_key != null){
-                                    topvisible_mode_target_object.removeInsertedCSS(el_top_visible_key)
+                                    topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
+                                        topvisible_mode_target_object.opd_top_visible_key = key;
+                                    })
                                 }
                             }
                         });
@@ -1631,32 +1620,39 @@ async function run(settings, opd_system_settings){
                     if(opd_column_auto_reload_checkbox != null){
                         if(mode != "session_set"){
                             opd_column_auto_reload_checkbox.addEventListener("click", function(){
-                                let auto_reload_target_object = this.closest("div[opd_column_type]").querySelector("webview");
-                                const auto_reload_time_input = this.closest("div[opd_column_type]").querySelector(".opd_a_reload_time_setting");
-                                const auto_reload_time = Number(auto_reload_time_input.value) * 1000;
+                                const auto_reload_column_div = this.closest("div[opd_column_type]");
+                                const auto_reload_time_input = auto_reload_column_div.querySelector(".opd_a_reload_time_setting");
+                                clearInterval(auto_reload_column_div.opd_auto_reload_int);
                                 if(this.checked){
                                     auto_reload_time_input.disabled = true;
-                                    auto_reload_int = setInterval(function(){
-                                        const now_url = new URL(auto_reload_target_object.getURL());
-                                        const path_name = now_url.pathname;
-                                        if(['/home', '/search'].includes(path_name) || path_name.startsWith('/i/lists')){
-                                            if(auto_reload_target_object.getAttribute("auto_reload_mouse_hover") == "false"){
-                                                if (column_content_reload){
-                                                    column_content_reload.Reload(auto_reload_target_object);
-                                                    setTimeout(() => {
-                                                        auto_reload_target_object.executeJavaScript("window.scrollTo({ top: 0, behavior: 'auto' })");
-                                                    }, 100);
-                                                }
-                                            }
-                                        };
-                                    }, auto_reload_time);
+                                    auto_reload_column_div.opd_auto_reload_int = setInterval(function(){
+                                        //カラムが閉じられていたらタイマーを止める
+                                        if(!auto_reload_column_div.isConnected){
+                                            clearInterval(auto_reload_column_div.opd_auto_reload_int);
+                                            return;
+                                        }
 
-                                    column_settings_save("", last_load_profile);
+                                        const target_webview = auto_reload_column_div.querySelector("webview");
+                                        if(!target_webview?.opd_auto_reload) return;
+                                        let path_name;
+                                        try{
+                                            path_name = new URL(target_webview.getURL()).pathname;
+                                        }catch(e){
+                                            return;
+                                        }
+                                        if(['/home', '/search'].includes(path_name) || path_name.startsWith('/i/lists')){
+                                            if(target_webview.getAttribute("auto_reload_mouse_hover") == "false"){
+                                                target_webview.opd_auto_reload.Reload(target_webview);
+                                                setTimeout(() => {
+                                                    target_webview.executeJavaScript("window.scrollTo({ top: 0, behavior: 'auto' })");
+                                                }, 100);
+                                            }
+                                        }
+                                    }, Number(auto_reload_time_input.value) * 1000);
                                 }else{
                                     auto_reload_time_input.disabled = false;
-                                    clearInterval(auto_reload_int);
-                                    column_settings_save("", last_load_profile);
                                 }
+                                column_settings_save("", last_load_profile);
                             });
                         }
                     }
@@ -1668,68 +1664,64 @@ async function run(settings, opd_system_settings){
                         if(opd_column_hide_rt_tweet_opt != null){
                             opd_column_hide_rt_tweet_opt.addEventListener("change", function(){
                                 const target_webview = this.closest("div[opd_column_type]").querySelector("webview");
+                                if(target_webview.opd_hide_rt_key != null){
+                                    target_webview.removeInsertedCSS(target_webview.opd_hide_rt_key);
+                                    target_webview.opd_hide_rt_key = null;
+                                }
                                 if(this.checked){
                                     target_webview.insertCSS('div[data-testid="cellInnerDiv"]:has(a>span[data-testid="socialContext"]){visibility: hidden; height: 0;}').then((key)=>{
-                                        el_hide_rt_tweet = key;
+                                        target_webview.opd_hide_rt_key = key;
                                     })
-                                }else{
-                                    target_webview.removeInsertedCSS(el_hide_rt_tweet)
                                 }
                                 column_settings_save("", last_load_profile);
                             })
                         }
                         //ツイート表示モードイベント
-                        opd_column_tw_view_mode_opt.addEventListener("change", async function(){
+                        opd_column_tw_view_mode_opt.addEventListener("change", function(){
+                            //再読み込み時に初期値へ戻らないよう属性も更新する
+                            this.setAttribute("column_tw_view_mode_val", this.value);
                             column_settings_save("", last_load_profile);
                             let tw_view_mode_target_object = this.closest("div[opd_column_type]").querySelector("webview");
-                            if(el_content_filter_key == null){
-                                //tw_view_mode_target_object.contentWindow.document.querySelector("head").insertAdjacentHTML("beforeend", `<style opd_tw_view_mode_css></style>`);
-                                await tw_view_mode_target_object.insertCSS('div[data-testid="cellInnerDiv"]:has(div[aria-labelledby]){}').then((key)=>{
-                                    el_content_filter_key = key;
-                                })
-                            }
-                            if(el_content_filter_key != null){
-                                await tw_view_mode_target_object.removeInsertedCSS(el_content_filter_key)
+                            if(tw_view_mode_target_object.opd_content_filter_key != null){
+                                tw_view_mode_target_object.removeInsertedCSS(tw_view_mode_target_object.opd_content_filter_key);
+                                tw_view_mode_target_object.opd_content_filter_key = null;
                             }
                             switch (this.value) {
-                                case "0":
-                                    //すべて
-                                    break;
                                 case "1":
                                     //テキストのみ
                                     tw_view_mode_target_object.insertCSS(tweet_visible_ctrl_selectors.text_only).then((key)=>{
-                                        el_content_filter_key = key;
+                                        tw_view_mode_target_object.opd_content_filter_key = key;
                                     })
                                     break;
                                 case "2":
                                     //動画・画像のみ
                                     tw_view_mode_target_object.insertCSS(tweet_visible_ctrl_selectors.media_only).then((key)=>{
-                                        el_content_filter_key = key;
+                                        tw_view_mode_target_object.opd_content_filter_key = key;
                                     })
                                     break;
                                 case "3":
                                     //テキストのみ(引用元も含む)
                                     tw_view_mode_target_object.insertCSS(tweet_visible_ctrl_selectors.text_only_quote).then((key)=>{
-                                        el_content_filter_key = key;
+                                        tw_view_mode_target_object.opd_content_filter_key = key;
                                     })
                                     break;
                                 case "4":
                                     //動画・画像のみ(引用元も含む)
                                     tw_view_mode_target_object.insertCSS(tweet_visible_ctrl_selectors.media_only_quote).then((key)=>{
-                                        el_content_filter_key = key;
+                                        tw_view_mode_target_object.opd_content_filter_key = key;
                                     })
                                     break;
                                 default:
-                                    if(el_content_filter_key != null){
-                                        tw_view_mode_target_object.removeInsertedCSS(el_content_filter_key)
-                                    }
+                                    //すべて
                                     break;
                             }
                         })
                     }
                 }
                 //カラムバー空白領域クリックでトップにスクロール
-                opd_column_scroll_to_top.addEventListener("click", () => { this.executeJavaScript('location.host === "misskey.io" ? document.querySelector("._pageScrollable")?.scrollTo({ top: 0, behavior: "auto" }) : scrollTo({ top: 0, behavior: "auto" })'); });
+                if(mode != "session_set"){
+                    opd_column_scroll_to_top.addEventListener("click", () => { opd_column_div.querySelector("webview").executeJavaScript('location.host === "misskey.io" ? document.querySelector("._pageScrollable")?.scrollTo({ top: 0, behavior: "auto" }) : scrollTo({ top: 0, behavior: "auto" })'); });
+                }
 
             }, { once: true })
             //exploreURL検出処理
