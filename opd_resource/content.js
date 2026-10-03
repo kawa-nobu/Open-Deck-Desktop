@@ -1235,7 +1235,7 @@ async function run(settings, opd_system_settings){
                 });
             }
 
-            //バナー/表示モード変更
+            //ページ読み込みごとの処理(表示設定・カラム拡張機能の適用をする)
             column_object[index].addEventListener("did-finish-load", function(){
                 let opd_column_div = this.closest("div[opd_column_type]");
                 const column_sns_provider = opd_column_div.getAttribute('opd_provider');
@@ -1363,7 +1363,7 @@ async function run(settings, opd_system_settings){
                     }
                 }
             })
-            //各カラム読み込み後の動作(init)
+            //各カラム読み込み後の動作(初回のみ)
             column_object[index].addEventListener("did-finish-load", function(){
                 let opd_column_div = this.closest("div[opd_column_type]");
                 let opd_column_width_btn = opd_column_div.querySelector(".column_width_btn");
@@ -1530,14 +1530,14 @@ async function run(settings, opd_system_settings){
                                     clearInterval(opd_column_div.opd_auto_reload_int);
                                     return;
                                 }
-                                //毎回「現在の」webviewを取得する
+
                                 const target_webview = opd_column_div.querySelector("webview");
                                 if(!target_webview?.opd_auto_reload) return;
                                 let path_name;
                                 try{
                                     path_name = new URL(target_webview.getURL()).pathname;
                                 }catch(e){
-                                    return; //dom-ready前など
+                                    return;
                                 }
                                 if(['/home', '/search'].includes(path_name) || path_name.startsWith('/i/lists')){
                                     if(target_webview.getAttribute("auto_reload_mouse_hover") == "false"){
