@@ -17,7 +17,7 @@
   "repository": "github:kawa-nobu/Open-Deck-Desktop",
   "devDependencies": {
     "electron": "^42.11.18",
-    "electron-builder": "^26.18.0"
+    "electron-builder": "^26.15.3"
   },
   "build": {
     "appId": "work.kwdev.opdapp.release",
