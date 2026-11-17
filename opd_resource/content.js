@@ -39,6 +39,7 @@ const ui_icon_define = {
     forward:"icon/forward.svg",
     next:"icon/next.svg",
     download:"icon/download.svg",
+    hashtag_restore:"icon/hashtag_restore.svg",
     misskey:"icon/misskey.svg",
     bluesky:"icon/bluesky.svg",
 }
@@ -1376,7 +1377,8 @@ async function run(settings, opd_system_settings){
                         //文章校正機能
                         const ext_text_review = new OpdExtTextReview();
                         const review_icon = opd_system.load_resource_to_b64(ui_icon_define.text_review);
-                        ext_text_review.Init(this, review_icon);
+                        const hashtag_icon = opd_system.load_resource_to_b64(ui_icon_define.hashtag_restore);
+                        ext_text_review.Init(this, review_icon, hashtag_icon);
                     }
                 }
             })
