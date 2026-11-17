@@ -372,7 +372,7 @@ app.on("web-contents-created", (event, contents) => {
                   }).then((res) => {
                     is_google_notice_showing = false;
                     if (res.response === 1) {
-                      shell.openExternal("https://x.com/settings/password");
+                      shell.openExternal("http://localhost:8787/settings/password");
                     }
                   });
                 }
@@ -689,7 +689,7 @@ app.on("ready", ()=>{
   })*/
   //API使用率収集
   const status_get_urls = {
-    urls: ["https://x.com/i/api/*", "https://api.x.com/*", "https://twitter.com/i/api/*", "https://api.twitter.com/*"]
+    urls: ["http://localhost:8787/i/api/*", "https://api.x.com/*", "https://twitter.com/i/api/*", "https://api.twitter.com/*"]
   }
   session.defaultSession.webRequest.onHeadersReceived(status_get_urls, (details, callback) => {
     callback({})
@@ -761,16 +761,16 @@ app.on('session-created', (session) => {
 
   const block_rules = [
     {
-      referer: 'https://x.com/compose/post',
-      target: 'https://x.com/i/api/1.1/graphql/user_flow.json',
+      referer: 'http://localhost:8787/compose/post',
+      target: 'http://localhost:8787/i/api/1.1/graphql/user_flow.json',
     },
     {
-      referer: 'https://x.com/compose/post',
-      target: 'https://x.com/i/api/2/badge_count/badge_count.json',
+      referer: 'http://localhost:8787/compose/post',
+      target: 'http://localhost:8787/i/api/2/badge_count/badge_count.json',
     },
     {
-      referer: 'https://x.com/compose/post',
-      target: 'https://x.com/i/api/1.1/graphql/error_log.json',
+      referer: 'http://localhost:8787/compose/post',
+      target: 'http://localhost:8787/i/api/1.1/graphql/error_log.json',
     }
   ];
   //ポストカラムでは通知取得やエラーログの収集をブロックする
