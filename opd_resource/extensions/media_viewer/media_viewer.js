@@ -1,7 +1,13 @@
 // メディアビューワー
 class OpdExtMediaViewer {
     constructor() {
-        this.Preview = (media_info, pre_index) => {
+        //最高ビットレートな動画URLを取得する
+        const getVideoUrl = (info) => {
+            const variants = info.video_info?.variants?.filter(variant => variant.content_type === "video/mp4") ?? [];
+            return variants.sort((a, b) => b.bitrate - a.bitrate)[0]?.url ?? "";
+        };
+
+        this.Preview = (media_info, pre_index, callback=()=>{}) => {
             let current_media_idx = pre_index;
             const media_viewer_div = document.createElement("div");
             const media_viewer_dialog = document.createElement("dialog");
@@ -17,7 +23,7 @@ class OpdExtMediaViewer {
                     return `
                     <video data-media
                         style="width:auto;height:auto;max-width:calc(100% - 160px);max-height:100%;object-fit:contain;"
-                        src="${info.video_info.variants.at(-1).url}"
+                        src="${getVideoUrl(info)}"
                         controls
                         autoplay
                         playsinline
@@ -71,7 +77,7 @@ class OpdExtMediaViewer {
 
                 if (["animated_gif","video"].includes(nextInfo.type) && current.tagName === "VIDEO") {
                     setMediaLoading(true);
-                    current.src = nextInfo.video_info.variants.at(-1).url;
+                    current.src = getVideoUrl(nextInfo);
                     current.load();
                     //キー操作などで高速に動画の移動を繰り返すと、ユーザー操作起因の無害なAbortErrorが出るため握りつぶす
                     current.play().catch((error) => {
@@ -187,6 +193,9 @@ class OpdExtMediaViewer {
                     video_element.remove();
                 }
                 media_viewer_div.remove();
+
+                //callbackを実行する
+                callback();
             }
 
             //メディアビューワーを閉じる際の処理
@@ -245,7 +254,8 @@ class OpdExtMediaViewer {
         this.DownloadMedia = async (media) => {
             let media_src = null;
             if (["animated_gif","video"].includes(media?.type)) {
-                media_src = media.video_info.variants.at(-1).url;
+                media_src = getVideoUrl(media);
+                if(!media_src) return;
             }
             if (media?.type === "photo") {
                 media_src = media.media_url_https + '?name=orig';
