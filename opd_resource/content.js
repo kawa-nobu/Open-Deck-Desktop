@@ -1210,6 +1210,34 @@ async function run(settings, opd_system_settings){
                             }
                         }
                     })`);
+                //Twitterの新クライアントでナビゲーションバーの調整をする
+                if(column_object[index].closest("div[opd_column_type]").getAttribute("opd_provider") === "twitter"){
+                    const new_client_nav_css = `
+                        /* ナビゲーションバーを従来の様に横配置にする */
+                        div:has(> [data-bottom-bar]) {
+                          inset: 0 auto 0 4px; height: fit-content; margin-block: auto; z-index: 100;
+                          flex-direction: column; align-items: center; gap: 12px;
+
+                          & > [data-bottom-bar] {
+                            flex-direction: column; width: 56px !important; height: auto !important;
+                            & > :is(span, [inert]) { display: none }
+                            & > div { flex: none; aspect-ratio: 1 }
+                            & [aria-current] { background: #7f7f7f2e }
+                          }
+                          & > [data-compose-fab] { position: static; translate: none }
+                        }
+                        :root { --x-bottom-bar-clearance: 0px !important }
+                    `;
+                    this.executeJavaScript(`
+                        //トップレベルではクライアント判定が難しいのでこうしている
+                        if (['appEnv', 'appVersion'].some(k => k in document.documentElement.dataset)) {
+                            const style = document.createElement('style');
+                            style.setAttribute('opd_new_client_css', '');
+                            style.textContent = ${JSON.stringify(new_client_nav_css)};
+                            document.head.append(style);
+                        }
+                    `);
+                }
                 //UIカラーモード固定Cookie削除
                 if(column_object[index].closest("div[opd_column_type]").getAttribute("opd_provider") == "twitter"){
                     this.executeJavaScript(`document.cookie = "night_mode=2; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.x.com;path=/;"`)
@@ -1289,7 +1317,7 @@ async function run(settings, opd_system_settings){
                         this.opd_banner_key = null;
                     }
                     if(opd_column_banner_checkbox?.checked != true){
-                        this.insertCSS('header[role="banner"]{display:none;}').then((key)=>{
+                        this.insertCSS('div:has(> [data-bottom-bar]), header[role="banner"]{display:none;}').then((key)=>{
                             this.opd_banner_key = key;
                         })
                     }
@@ -1302,15 +1330,15 @@ async function run(settings, opd_system_settings){
                     if(opd_column_top_visible_checkbox?.checked != true){
                         const top_back_btn_color_css = 'button[data-testid="app-bar-back"]{background-color: #ffffff33 !important;}button[data-testid="app-bar-back"]:hover{background-color: #ffffff4d !important;}';
                         if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "explore"){
-                            this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
+                            this.insertCSS(`[class*="page-header-inset-top"], [class*="page-header-inset-top"] + .border-b:has(a[href^="/i/lists"]), div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
                                 this.opd_top_visible_key = key;
                             })
                         }else if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "home"){
-                            this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
+                            this.insertCSS(`[class*="page-header-inset-top"], [class*="page-header-inset-top"] + .border-b:has(a[href^="/i/lists"]), div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
                                 this.opd_top_visible_key = key;
                             })
                         }else{
-                            this.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
+                            this.insertCSS(`[class*="page-header-inset-top"], [class*="page-header-inset-top"] + .border-b:has(a[href^="/i/lists"]), div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
                                 this.opd_top_visible_key = key;
                             })
                         }
@@ -1322,7 +1350,7 @@ async function run(settings, opd_system_settings){
                         this.opd_hide_rt_key = null;
                     }
                     if(opd_column_hide_rt_tweet_opt?.checked){
-                        this.insertCSS('div[data-testid="cellInnerDiv"]:has(a>span[data-testid="socialContext"]){visibility: hidden; height: 0;}').then((key)=>{
+                        this.insertCSS('li:has(article svg[data-icon^="icon-repost"]), div[data-testid="cellInnerDiv"]:has(a>span[data-testid="socialContext"]){visibility: hidden; height: 0;}').then((key)=>{
                             this.opd_hide_rt_key = key;
                         })
                     }
@@ -1587,7 +1615,7 @@ async function run(settings, opd_system_settings){
                                 banner_mode_target_object.opd_banner_key = null;
                             }
                             if(this.checked != true){
-                                banner_mode_target_object.insertCSS('header[role="banner"]{display:none;}').then((key)=>{
+                                banner_mode_target_object.insertCSS('div:has(> [data-bottom-bar]), header[role="banner"]{display:none;}').then((key)=>{
                                     banner_mode_target_object.opd_banner_key = key;
                                 })
                             }
@@ -1604,15 +1632,15 @@ async function run(settings, opd_system_settings){
                             if(this.checked != true){
                                 const top_back_btn_color_css = 'button[data-testid="app-bar-back"]{background-color: #ffffff33 !important;}button[data-testid="app-bar-back"]:hover{background-color: #ffffff4d !important;}';
                                 if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "explore"){
-                                    topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
+                                    topvisible_mode_target_object.insertCSS(`[class*="page-header-inset-top"], [class*="page-header-inset-top"] + .border-b:has(a[href^="/i/lists"]), div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
                                         topvisible_mode_target_object.opd_top_visible_key = key;
                                     })
                                 }else if(this.closest("div[opd_column_type]").getAttribute("opd_column_type") == "home"){
-                                    topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
+                                    topvisible_mode_target_object.insertCSS(`[class*="page-header-inset-top"], [class*="page-header-inset-top"] + .border-b:has(a[href^="/i/lists"]), div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;} div[role="progressbar"] + div{visibility: hidden;height: 0;padding: 0;}${top_back_btn_color_css}`).then((key)=>{
                                         topvisible_mode_target_object.opd_top_visible_key = key;
                                     })
                                 }else{
-                                    topvisible_mode_target_object.insertCSS(`div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
+                                    topvisible_mode_target_object.insertCSS(`[class*="page-header-inset-top"], [class*="page-header-inset-top"] + .border-b:has(a[href^="/i/lists"]), div[data-testid="primaryColumn"]>[tabindex="0"][aria-label]>div:nth-child(1){visibility: hidden; height: 0;top: calc(100vh - 60px);position: sticky;backdrop-filter: blur(0px) !important;}[data-testid="app-bar-back"]{visibility: visible; filter: none;}${top_back_btn_color_css}`).then((key)=>{
                                         topvisible_mode_target_object.opd_top_visible_key = key;
                                     })
                                 }
@@ -1696,7 +1724,7 @@ async function run(settings, opd_system_settings){
                                     target_webview.opd_hide_rt_key = null;
                                 }
                                 if(this.checked){
-                                    target_webview.insertCSS('div[data-testid="cellInnerDiv"]:has(a>span[data-testid="socialContext"]){visibility: hidden; height: 0;}').then((key)=>{
+                                    target_webview.insertCSS('li:has(article svg[data-icon^="icon-repost"]), div[data-testid="cellInnerDiv"]:has(a>span[data-testid="socialContext"]){visibility: hidden; height: 0;}').then((key)=>{
                                         target_webview.opd_hide_rt_key = key;
                                     })
                                 }
