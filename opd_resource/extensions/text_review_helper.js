@@ -311,7 +311,7 @@
     const ext_text_review = new OpdExtTextReviewHelper();
     ext_text_review.Init();
 
-    const is_new_client = !document.getElementById('react-root');
+    const is_new_client = Object.keys(document.querySelector('html').dataset).some(key=>['appEnv', 'appVersion'].includes(key));
     let router = null;
     const textarea_hashtags = new Map();
     let in_compose = false;
