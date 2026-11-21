@@ -1,11 +1,15 @@
 //自動更新機能用
 (() => {
-    let path_old = null;
+    const is_new_client = Object.keys(document.querySelector('html').dataset).some(key=>['appEnv', 'appVersion'].includes(key));
     let opd_reload_token = null;
-    let reload_func = ()=>{};
+    let reload_func = () => { };
     
     //タイムライン更新関数
-    reload_func = ()=>{
+    reload_func = () => {
+        //新クライアントの場合は新しいAPIを使うようにする
+        if (is_new_client) return get_new_client_timeline_api(document.querySelector('main section[aria-labelledby]'))?.fetchTop({ requestContext: 'ptr' });
+
+        //旧クライアントは従来通りのものを使う
         get_on_refresh_props(document.querySelector('section[role="region"]'))?.onRefresh();
     };
 
@@ -22,6 +26,29 @@
         }
         return null;
     }
+
+    //新クライアントのタイムラインAPIを取得する
+    function get_new_client_timeline_api(elem, max_hop = 30) {
+        let fiber = get_props(elem, "Fiber");
+        let hop = 0;
+        while (fiber && hop++ < max_hop) {
+            //ホームなど、外側からrefが渡されている場合
+            const api = fiber.memoizedProps?.api?.current;
+            if (typeof api?.fetchTop === 'function') {
+                return api;
+            }
+            //外側からrefが渡されていない画面はラッパーがuseRefに保持しているものを使用する
+            for (let state = fiber.memoizedState; state; state = state.next) {
+                const state_api = state.memoizedState?.current?.api;
+                if (typeof state_api?.fetchTop === 'function') {
+                    return state_api;
+                }
+            }
+            fiber = fiber.return;
+        }
+        return null;
+    }
+
     //ReactProps取得関数
     function get_props(elem, type){
         const prop_type = type === "Props" ? type : "Fiber";
